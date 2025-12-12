@@ -1,0 +1,9 @@
+Django
+django-crispy-forms
+Pillow
+django-extensions
+python-dotenv
+gunicorn
+whitenoise
+pandas
+openpyxl

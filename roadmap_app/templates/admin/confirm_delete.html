@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Удаление {{ model_name }} - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'data_management' model_type %}" class="btn btn-sm me-3" 
+               style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9aa0a6;">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+            <h1 class="h3 mb-0" style="color: #e6e6e7;">
+                <i class="fas fa-trash me-2"></i>Подтверждение удаления
+            </h1>
+        </div>
+        
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 72px; color: rgba(220,53,69,0.3);"></i>
+                </div>
+                
+                <h4 class="mb-3" style="color: #e6e6e7;">Вы уверены, что хотите удалить?</h4>
+                
+                <div class="mb-4">
+                    <div class="p-3" style="background-color: rgba(255,255,255,0.03); border-radius: 8px;">
+                        <div class="fw-bold" style="color: #e6e6e7;">
+                            {% if model_type == 'question' %}
+                                {{ item.text|truncatechars:80 }}
+                            {% elif model_type == 'work' %}
+                                {{ item.title|truncatechars:80 }}
+                            {% else %}
+                                {{ item.name|truncatechars:80 }}
+                            {% endif %}
+                        </div>
+                        <div class="small text-muted mt-2">
+                            ID: {{ item.id }} | Тип: {{ model_name }}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if has_dependencies %}
+                <div class="alert alert-warning mb-4" style="background-color: rgba(255,193,7,0.1); border-color: rgba(255,193,7,0.2); color: #ffc107;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Эта запись связана с другими данными. Удаление может повлиять на работу системы.
+                </div>
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'data_management' model_type %}" class="btn px-4" 
+                           style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #e6e6e7;">
+                            <i class="fas fa-times me-2"></i>Отмена
+                        </a>
+                        <button type="submit" class="btn px-4" 
+                                style="background-color: #dc3545; color: white; font-weight: 600;">
+                            <i class="fas fa-trash me-2"></i>Да, удалить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

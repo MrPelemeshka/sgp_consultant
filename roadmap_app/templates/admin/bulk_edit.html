@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Массовое редактирование - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-sm me-3" 
+               style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9aa0a6;">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+            <h1 class="h3 mb-0" style="color: #e6e6e7;">
+                <i class="fas fa-edit me-2"></i>Массовое редактирование
+            </h1>
+        </div>
+        
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 1: Выберите тип данных</h5>
+                        {{ form.model_type }}
+                        <div class="form-text text-muted small mt-1">
+                            Выберите тип данных для массового редактирования
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 2: Введите ID записей</h5>
+                        <textarea id="id_ids_input" class="form-control" rows="3" 
+                                  placeholder="Введите ID через запятую, например: 1,2,3,4,5"></textarea>
+                        {{ form.ids }}
+                        <div class="form-text text-muted small mt-1">
+                            Вы можете скопировать ID из таблицы управления данными
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 3: Выберите поле для изменения</h5>
+                        {{ form.field_to_edit }}
+                        <div class="form-text text-muted small mt-1" id="fieldHelp">
+                            Введите название поля (например: description, order, color)
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 4: Введите новое значение</h5>
+                        {{ form.new_value }}
+                        <div class="form-text text-muted small mt-1">
+                            Для логических полей используйте: true или false
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning mb-4" style="background-color: rgba(255,193,7,0.1); border-color: rgba(255,193,7,0.2); color: #ffc107;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Внимание!</strong> Массовое редактирование невозможно отменить. 
+                        Убедитесь в правильности введенных данных перед сохранением.
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg py-3" 
+                                style="background-color: #E00078; color: white; font-weight: 700;">
+                            <i class="fas fa-save me-2"></i>Применить изменения к выбранным записям
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Копируем значения из текстового поля в скрытое поле
+    $('#id_ids_input').on('input', function() {
+        $('#id_ids').val($(this).val());
+    });
+    
+    // Загрузка доступных полей при изменении типа модели
+    $('#id_model_type').change(function() {
+        const modelType = $(this).val();
+        if (modelType) {
+            $.ajax({
+                url: '{% url "get_model_fields" %}',
+                data: { model_type: modelType },
+                success: function(data) {
+                    if (data.fields && data.fields.length > 0) {
+                        const fieldList = data.fields.join(', ');
+                        $('#fieldHelp').html(`Доступные поля: <code>${fieldList}</code>`);
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Администрирование - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h3 mb-0" style="color: #e6e6e7;">
+            <i class="fas fa-cogs me-2"></i>Администрирование данных
+        </h1>
+        <p class="text-muted small mb-0 mt-2">
+            Управление справочниками и данными системы
+        </p>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body text-center">
+                <div class="h2 mb-0" style="color: #E00078;">{{ stats.mineral_types }}</div>
+                <div class="small text-muted">Типы ПИ</div>
+                <a href="{% url 'data_management' 'mineral_type' %}" class="btn btn-sm mt-2" 
+                   style="background-color: rgba(224,0,120,0.1); color: #E00078; border: 1px solid rgba(224,0,120,0.3);">
+                    Управление
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body text-center">
+                <div class="h2 mb-0" style="color: #3489eb;">{{ stats.stages }}</div>
+                <div class="small text-muted">Этапы</div>
+                <a href="{% url 'data_management' 'stage' %}" class="btn btn-sm mt-2" 
+                   style="background-color: rgba(52,137,235,0.1); color: #3489eb; border: 1px solid rgba(52,137,235,0.3);">
+                    Управление
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body text-center">
+                <div class="h2 mb-0" style="color: #00d26a;">{{ stats.works }}</div>
+                <div class="small text-muted">Работы</div>
+                <a href="{% url 'data_management' 'work' %}" class="btn btn-sm mt-2" 
+                   style="background-color: rgba(0,210,106,0.1); color: #00d26a; border: 1px solid rgba(0,210,106,0.3);">
+                    Управление
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body text-center">
+                <div class="h2 mb-0" style="color: #ffc107;">{{ stats.questions }}</div>
+                <div class="small text-muted">Вопросы</div>
+                <a href="{% url 'data_management' 'question' %}" class="btn btn-sm mt-2" 
+                   style="background-color: rgba(255,193,7,0.1); color: #ffc107; border: 1px solid rgba(255,193,7,0.3);">
+                    Управление
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Действия -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <h5 class="mb-0" style="color: #e6e6e7;">
+                    <i class="fas fa-file-import me-2"></i>Импорт данных
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Импортируйте данные из JSON, CSV или Excel файлов</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'import_data' %}" class="btn" 
+                       style="background-color: rgba(0,210,106,0.1); color: #00d26a; border: 1px solid rgba(0,210,106,0.3);">
+                        <i class="fas fa-upload me-2"></i>Импорт данных
+                    </a>
+                    <a href="{% url 'import_logs' %}" class="btn" 
+                       style="background-color: rgba(52,137,235,0.1); color: #3489eb; border: 1px solid rgba(52,137,235,0.3);">
+                        <i class="fas fa-history me-2"></i>История импорта
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <h5 class="mb-0" style="color: #e6e6e7;">
+                    <i class="fas fa-file-export me-2"></i>Экспорт данных
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Экспортируйте данные в различных форматах</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'export_data' %}" class="btn" 
+                       style="background-color: rgba(224,0,120,0.1); color: #E00078; border: 1px solid rgba(224,0,120,0.3);">
+                        <i class="fas fa-download me-2"></i>Экспорт данных
+                    </a>
+                    <a href="{% url 'bulk_edit' %}" class="btn" 
+                       style="background-color: rgba(255,193,7,0.1); color: #ffc107; border: 1px solid rgba(255,193,7,0.3);">
+                        <i class="fas fa-edit me-2"></i>Массовое редактирование
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Последние импорты -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <h5 class="mb-0" style="color: #e6e6e7;">
+                    <i class="fas fa-history me-2"></i>Последние операции импорта
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if stats.recent_imports %}
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover" style="color: #e6e6e7;">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Тип данных</th>
+                                <th>Статус</th>
+                                <th>Записей</th>
+                                <th>Ошибок</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in stats.recent_imports %}
+                            <tr>
+                                <td>{{ log.created_at|date:"d.m.Y H:i" }}</td>
+                                <td>{{ log.get_model_type_display }}</td>
+                                <td>
+                                    <span class="badge {% if log.status == 'completed' %}bg-success{% elif log.status == 'failed' %}bg-danger{% else %}bg-warning{% endif %}">
+                                        {{ log.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ log.imported_count }}</td>
+                                <td>{{ log.error_count }}</td>
+                                <td>
+                                    <a href="{% url 'log_detail' log.id %}" class="btn btn-sm" 
+                                       style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #e6e6e7;">
+                                        Детали
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-0">Нет операций импорта</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

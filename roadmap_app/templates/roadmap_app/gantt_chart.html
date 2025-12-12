@@ -1,0 +1,1209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ chart.title }} - Диаграмма Ганта{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --fuchsia: #E00078;
+        --accent-weak: rgba(224,0,120,0.08);
+        --card-bg: #151617;
+        --light: #e6e6e7;
+        --muted: #9aa0a6;
+        --dark-bg: #0b0c0d;
+    }
+    
+    .gantt-container {
+        background-color: var(--dark-bg);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255,255,255,0.03);
+    }
+    
+    .roadmap-panel {
+        background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255,255,255,0.03);
+        margin-bottom: 20px;
+    }
+    
+    .stage-accordion {
+        background-color: var(--card-bg);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        overflow: hidden;
+    }
+    
+    .stage-header {
+        padding: 15px 20px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        color: var(--light);
+    }
+    
+    .stage-header:hover {
+        background-color: rgba(255,255,255,0.02);
+    }
+    
+    .stage-header.active {
+        background-color: rgba(224,0,120,0.05);
+        border-left: 4px solid var(--fuchsia);
+    }
+    
+    .stage-content {
+        display: none;
+        padding: 0 20px 20px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .stage-content.active {
+        display: block;
+    }
+    
+    .work-item {
+        padding: 12px 15px;
+        margin-bottom: 8px;
+        background-color: rgba(255,255,255,0.02);
+        border-radius: 6px;
+        border-left: 3px solid #3489eb;
+        transition: all 0.2s ease;
+    }
+    
+    .work-item:hover {
+        background-color: rgba(52,137,235,0.05);
+        transform: translateX(5px);
+    }
+    
+    .work-number {
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 12px;
+    }
+    
+    .work-duration {
+        font-size: 12px;
+        color: var(--fuchsia);
+        font-weight: 600;
+        background-color: rgba(224,0,120,0.1);
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+    
+    .work-executor {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+    
+    .gantt-canvas-container {
+        background-color: #111213;
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid rgba(255,255,255,0.06);
+        overflow: auto;
+        max-height: 800px;
+    }
+    
+    .gantt-controls {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255,255,255,0.03);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .chart-meta {
+        background-color: rgba(255,255,255,0.02);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .meta-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+    
+    .meta-icon.mineral {
+        background-color: rgba(224,0,120,0.1);
+        color: var(--fuchsia);
+    }
+    
+    .meta-icon.stage {
+        background-color: rgba(52,137,235,0.1);
+        color: #3489eb;
+    }
+    
+    .meta-icon.question {
+        background-color: rgba(0,210,106,0.1);
+        color: #00d26a;
+    }
+    
+    .meta-text {
+        flex: 1;
+    }
+    
+    .meta-label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 2px;
+    }
+    
+    .meta-value {
+        font-size: 14px;
+        color: var(--light);
+        font-weight: 500;
+    }
+    
+    .time-scale {
+        display: flex;
+        gap: 1px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    
+    .month-marker {
+        min-width: 60px;
+        text-align: center;
+        padding: 5px;
+        background-color: rgba(255,255,255,0.03);
+        border-radius: 4px;
+        font-size: 11px;
+        color: var(--muted);
+    }
+    
+    .month-marker.current {
+        background-color: rgba(224,0,120,0.1);
+        color: var(--fuchsia);
+        font-weight: 600;
+    }
+    
+    .total-duration {
+        font-size: 14px;
+        color: var(--light);
+        font-weight: 600;
+    }
+    
+    .duration-badge {
+        background-color: rgba(224,0,120,0.1);
+        color: var(--fuchsia);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .dependency-line {
+        stroke: #E00078;
+        stroke-width: 2;
+        stroke-dasharray: 5, 3;
+        fill: none;
+    }
+
+    .dependency-arrow {
+        fill: #E00078;
+        stroke: #E00078;
+        stroke-width: 1;
+    }
+
+    .work-bar {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .work-bar:hover {
+        filter: brightness(1.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .stage-bar {
+        opacity: 0.1;
+        border-radius: 4px;
+    }
+
+    .work-tooltip {
+        position: absolute;
+        background: rgba(21, 22, 23, 0.95);
+        border: 1px solid rgba(224, 0, 120, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        color: #e6e6e7;
+        font-size: 12px;
+        max-width: 300px;
+        pointer-events: none;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .work-tooltip h6 {
+        color: #E00078;
+        margin: 0 0 8px 0;
+        font-size: 14px;
+    }
+
+    .work-tooltip p {
+        margin: 4px 0;
+        color: #9aa0a6;
+    }
+
+    .timeline-grid {
+        stroke: rgba(255, 255, 255, 0.05);
+        stroke-width: 1;
+    }
+
+    .timeline-grid-quarter {
+        stroke: rgba(255, 255, 255, 0.08);
+        stroke-width: 1;
+    }
+
+    .timeline-grid-year {
+        stroke: rgba(255, 255, 255, 0.12);
+        stroke-width: 2;
+    }
+
+    .work-label {
+        font-size: 11px;
+        fill: #ffffff;
+        font-family: Arial, sans-serif;
+        pointer-events: none;
+    }
+
+    .stage-label {
+        font-size: 12px;
+        font-weight: bold;
+        fill: #e6e6e7;
+        font-family: Arial, sans-serif;
+    }
+
+    .month-label {
+        font-size: 10px;
+        fill: #9aa0a6;
+        font-family: Arial, sans-serif;
+        text-anchor: middle;
+    }
+
+    .work-bar {
+        transition: all 0.2s ease;
+    }
+
+    .work-tooltip {
+        opacity: 0;
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb" style="background-color: transparent; padding: 0;">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}" style="color: var(--muted); text-decoration: none;">
+                                <i class="fas fa-chart-gantt me-1"></i>Мои диаграммы
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active" style="color: var(--light);">
+                            {{ chart.title|truncatechars:40 }}
+                        </li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0" style="color: var(--light);">{{ chart.title }}</h1>
+                <p class="text-muted small mb-0 mt-1">
+                    Создана: {{ chart.created_at|date:"d.m.Y" }} | 
+                    Обновлена: {{ chart.updated_at|date:"d.m.Y" }}
+                </p>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'dashboard' %}" class="btn btn-sm" 
+                   style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--light);">
+                    <i class="fas fa-arrow-left me-2"></i>Назад
+                </a>
+                
+                <button id="exportPdfBtn" class="btn btn-sm" 
+                        style="background-color: rgba(224,0,120,0.1); color: var(--fuchsia); border: 1px solid rgba(224,0,120,0.3);">
+                    <i class="fas fa-file-pdf me-2"></i>Экспорт PDF
+                </button>
+                
+                <button id="printBtn" class="btn btn-sm" 
+                        style="background-color: rgba(52,137,235,0.1); color: #3489eb; border: 1px solid rgba(52,137,235,0.3);">
+                    <i class="fas fa-print me-2"></i>Печать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Левая колонка - дорожная карта -->
+    <div class="col-lg-5 mb-4">
+        <div class="roadmap-panel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0" style="color: var(--light);">
+                    <i class="fas fa-map-signs me-2"></i>Дорожная карта
+                </h5>
+                <div class="total-duration">
+                    Общая длительность: 
+                    <span class="duration-badge" id="totalDuration">
+                        <!-- Заполнится JavaScript -->
+                    </span>
+                </div>
+            </div>
+            
+            <div class="chart-meta">
+                <div class="meta-item">
+                    <div class="meta-icon mineral">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="meta-text">
+                        <div class="meta-label">Тип полезного ископаемого</div>
+                        <div class="meta-value">{{ chart.mineral_type.name|default:"Не указан" }}</div>
+                    </div>
+                </div>
+                
+                <div class="meta-item">
+                    <div class="meta-icon stage">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="meta-text">
+                        <div class="meta-label">Начальная стадия проекта</div>
+                        <div class="meta-value">{{ chart.project_stage.name|default:"Не указана" }}</div>
+                    </div>
+                </div>
+                
+                {% if chart.question %}
+                <div class="meta-item">
+                    <div class="meta-icon question">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="meta-text">
+                        <div class="meta-label">Решаемый вопрос</div>
+                        <div class="meta-value">{{ chart.question.text }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div id="roadmapStages">
+                <!-- Стадии будут заполнены через JavaScript -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="text-muted small mt-2">Загрузка дорожной карты...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Правая колонка - диаграмма Ганта -->
+    <div class="col-lg-7">
+        <div class="gantt-controls">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center flex-wrap gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="showDependencies" checked>
+                        <label class="form-check-label small" for="showDependencies" style="color: var(--muted);">
+                            Показывать связи
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="showWorks" checked>
+                        <label class="form-check-label small" for="showWorks" style="color: var(--muted);">
+                            Показывать работы
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="highlightCurrent" checked>
+                        <label class="form-check-label small" for="highlightCurrent" style="color: var(--muted);">
+                            Подсвечивать выбранную стадию
+                        </label>
+                    </div>
+                </div>
+                <div class="small text-muted">
+                    <i class="fas fa-mouse-pointer me-1"></i>Кликните по работе для деталей
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контейнер для диаграммы -->
+        <div class="gantt-canvas-container">
+            <div id="ganttChart"></div>
+        </div>
+        
+        <!-- Легенда -->
+        <div class="gantt-controls mt-3">
+            <h6 class="mb-3" style="color: var(--light);">
+                <i class="fas fa-key me-2"></i>Легенда
+            </h6>
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-center">
+                        <div style="width: 20px; height: 10px; background-color: #3489eb; border-radius: 2px; margin-right: 10px;"></div>
+                        <span class="small" style="color: var(--muted);">Обычные работы</span>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-center">
+                        <div style="width: 20px; height: 10px; background-color: var(--fuchsia); border-radius: 2px; margin-right: 10px;"></div>
+                        <span class="small" style="color: var(--muted);">Работы выбранной стадии</span>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-center">
+                        <div style="width: 20px; height: 10px; background-color: #00d26a; border-radius: 2px; margin-right: 10px;"></div>
+                        <span class="small" style="color: var(--muted);">Завершенные работы</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для экспорта -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: var(--card-bg); border: 1px solid rgba(255,255,255,0.1);">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title" style="color: var(--light);">
+                    <i class="fas fa-file-export me-2"></i>Экспорт диаграммы
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small text-muted mb-2">Формат экспорта</label>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatPdf" checked>
+                        <label class="form-check-label" for="formatPdf" style="color: var(--light);">
+                            <i class="fas fa-file-pdf me-2"></i>PDF документ
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatImage">
+                        <label class="form-check-label" for="formatImage" style="color: var(--light);">
+                            <i class="fas fa-image me-2"></i>Изображение (PNG)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatExcel">
+                        <label class="form-check-label" for="formatExcel" style="color: var(--light);">
+                            <i class="fas fa-file-excel me-2"></i>Excel таблица
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small text-muted mb-2">Настройки</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeData" checked>
+                        <label class="form-check-label small" for="includeData" style="color: var(--muted);">
+                            Включить подробные данные
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="includeChart" checked>
+                        <label class="form-check-label small" for="includeChart" style="color: var(--muted);">
+                            Включить диаграмму Ганта
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info small mt-3" style="background-color: rgba(52,137,235,0.1); border-color: rgba(52,137,235,0.2); color: #3489eb;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Экспорт в PDF и Excel доступен только для авторизованных пользователей
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-sm" data-bs-dismiss="modal"
+                        style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--light);">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-sm" id="startExport"
+                        style="background-color: var(--fuchsia); color: white;">
+                    <i class="fas fa-download me-2"></i>Начать экспорт
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрытые данные для JavaScript -->
+<script id="chartData" type="application/json">
+{{ chart_data_json|safe }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<script>
+// Основные данные
+let chartData;
+try {
+    const chartDataElement = document.getElementById('chartData');
+    chartData = JSON.parse(chartDataElement.textContent);
+} catch (error) {
+    console.error('Ошибка парсинга JSON:', error);
+    chartData = {
+        stages: [],
+        mineral_type: { name: "Ошибка" },
+        project_stage: { name: "Ошибка" },
+        total_duration: 0
+    };
+}
+
+// Переменные для управления
+let currentStageIndex = 0;
+let showDependencies = true;
+let showWorks = true;
+let highlightCurrent = true;
+
+// Цветовая схема для стадий
+const stageColors = [
+    '#4285F4', '#34A853', '#FBBC05', '#EA4335', '#8B5CF6',
+    '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#EC4899'
+];
+
+$(document).ready(function() {
+    console.log('Данные диаграммы:', chartData);
+    
+    // Инициализация дорожной карты
+    initRoadmap();
+    
+    // Инициализация диаграммы Ганта с D3.js
+    initGanttChart();
+    
+    // Обработчики событий
+    setupEventHandlers();
+});
+
+function initRoadmap() {
+    const roadmapContainer = $('#roadmapStages');
+    const stages = chartData.stages || [];
+    
+    if (stages.length === 0) {
+        roadmapContainer.html(`
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: rgba(255,193,7,0.5);"></i>
+                <p class="text-muted mt-3 mb-0">Нет данных для отображения</p>
+            </div>
+        `);
+        return;
+    }
+    
+    let roadmapHtml = '';
+    let totalDuration = chartData.total_duration || 0;
+    
+    stages.forEach((stage, stageIndex) => {
+        const stageColor = stageColors[stageIndex % stageColors.length];
+        const worksCount = stage.works ? stage.works.length : 0;
+        
+        roadmapHtml += `
+            <div class="stage-accordion" data-stage-index="${stageIndex}">
+                <div class="stage-header" data-stage-index="${stageIndex}">
+                    <div>
+                        <span style="color: ${stageColor}; font-weight: 600;">
+                            ${stage.order}. ${stage.name}
+                        </span>
+                        <div class="small text-muted mt-1">${worksCount} работ · ${stage.duration || 0} мес</div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="work-duration me-3">${stage.start || 0}-${(stage.start || 0) + (stage.duration || 0)} мес</span>
+                        <i class="fas fa-chevron-down transition-icon"></i>
+                    </div>
+                </div>
+                <div class="stage-content" id="stageContent${stageIndex}">
+        `;
+        
+        if (stage.works && stage.works.length > 0) {
+            stage.works.forEach((work, workIndex) => {
+                const workNumber = work.number || `${stage.order}.${workIndex + 1}`;
+                const workColor = stageIndex === currentStageIndex ? '#E00078' : stageColor;
+                
+                roadmapHtml += `
+                    <div class="work-item" data-work-id="${work.id}" 
+                         data-stage-index="${stageIndex}" 
+                         style="border-left-color: ${workColor};"
+                         onclick="highlightWork('${work.id}', ${stageIndex})">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div style="flex: 1;">
+                                <span class="work-number">${workNumber}</span>
+                                <div class="mt-1" style="color: var(--light);">${work.title}</div>
+                                <div class="work-executor">
+                                    <i class="fas fa-user me-1"></i>${work.executor || 'Не указан'}
+                                </div>
+                            </div>
+                            <div class="work-duration">${work.duration || 1} мес</div>
+                        </div>
+                        ${work.description ? `
+                            <div class="small text-muted mt-2">
+                                ${work.description}
+                            </div>
+                        ` : ''}
+                        <div class="small text-muted mt-1">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Месяцы: ${work.start_global || 0} - ${(work.start_global || 0) + (work.duration || 1)}
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            roadmapHtml += `
+                <div class="text-center py-3">
+                    <p class="text-muted small mb-0">Нет работ в этом этапе</p>
+                </div>
+            `;
+        }
+        
+        roadmapHtml += `
+                </div>
+            </div>
+        `;
+    });
+    
+    // Обновляем общую длительность
+    $('#totalDuration').text(`${totalDuration} месяцев`);
+    
+    roadmapContainer.html(roadmapHtml);
+    
+    // Открываем первую стадию по умолчанию
+    if (stages.length > 0) {
+        openStage(0);
+    }
+}
+
+function initGanttChart() {
+    const stages = chartData.stages || [];
+    if (stages.length === 0) return;
+    
+    // Очищаем контейнер
+    const container = d3.select('#ganttChart');
+    container.html('');
+    
+    // Рассчитываем размеры
+    const margin = { top: 20, right: 20, bottom: 60, left: 250 };
+    const width = Math.max(800, container.node().parentElement.clientWidth - margin.left - margin.right);
+    const allWorks = getAllWorks();
+    const rowHeight = 35;
+    const stageHeaderHeight = 50;
+    const maxMonths = calculateTotalMonths();
+    
+    // Высота рассчитываем динамически
+    let totalHeight = margin.top + margin.bottom;
+    stages.forEach(stage => {
+        totalHeight += stageHeaderHeight;
+        if (stage.works && stage.works.length > 0) {
+            totalHeight += stage.works.length * rowHeight + 10;
+        }
+    });
+    
+    const height = Math.max(500, totalHeight);
+    
+    // Создаем SVG
+    const svg = container.append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+    // Масштабы
+    const x = d3.scaleLinear()
+        .domain([0, maxMonths])
+        .range([0, width]);
+    
+    // Рисуем сетку
+    drawGrid(svg, x, height, maxMonths);
+    
+    // Собираем все работы с координатами
+    let currentY = 0;
+    const workCoordinates = [];
+    
+    stages.forEach((stage, stageIndex) => {
+        const stageColor = stageColors[stageIndex % stageColors.length];
+        
+        // Рисуем фон стадии
+        if (stage.start !== undefined && stage.duration) {
+            const stageStartX = x(stage.start);
+            const stageWidth = x(stage.duration) - x(0);
+            
+            svg.append('rect')
+                .attr('x', stageStartX)
+                .attr('y', currentY)
+                .attr('width', stageWidth)
+                .attr('height', stageHeaderHeight)
+                .attr('fill', stageColor)
+                .attr('opacity', 0.1)
+                .attr('rx', 4);
+            
+            // Подпись стадии на фоне
+            svg.append('text')
+                .attr('x', stageStartX + 10)
+                .attr('y', currentY + 25)
+                .attr('class', 'stage-label')
+                .attr('fill', stageColor)
+                .text(`${stage.order}. ${stage.name}`);
+            
+            // Длительность стадии
+            svg.append('text')
+                .attr('x', stageStartX + stageWidth - 10)
+                .attr('y', currentY + 25)
+                .attr('class', 'stage-label')
+                .attr('text-anchor', 'end')
+                .attr('fill', stageColor)
+                .text(`${stage.duration} мес`);
+        }
+        
+        currentY += stageHeaderHeight;
+        
+        // Рисуем работы стадии
+        if (stage.works && stage.works.length > 0) {
+            stage.works.forEach((work, workIndex) => {
+                const workStart = work.start_global || 0;
+                const workDuration = work.duration_months || 1;
+                const workStartX = x(workStart);
+                const workWidth = x(workDuration) - x(0);
+                const workY = currentY + workIndex * rowHeight;
+                
+                // Определяем цвет работы
+                let workColor = stageColor;
+                if (highlightCurrent && stageIndex === currentStageIndex) {
+                    workColor = '#E00078';
+                }
+                
+                // Рисуем полосу работы
+                const workBar = svg.append('rect')
+                    .attr('x', workStartX)
+                    .attr('y', workY)
+                    .attr('width', Math.max(workWidth, 5))
+                    .attr('height', rowHeight - 8)
+                    .attr('fill', workColor)
+                    .attr('rx', 3)
+                    .attr('class', 'work-bar')
+                    .attr('data-work-id', work.id)
+                    .attr('data-stage-index', stageIndex)
+                    .style('cursor', 'pointer');
+                
+                // Добавляем номер месяца в начале
+                if (workWidth > 30) {
+                    svg.append('text')
+                        .attr('x', workStartX + 5)
+                        .attr('y', workY + (rowHeight - 8) / 2)
+                        .attr('class', 'work-label')
+                        .attr('fill', '#ffffff')
+                        .attr('dy', '0.3em')
+                        .text(workStart);
+                }
+                
+                // Добавляем номер месяца в конце
+                if (workWidth > 30) {
+                    svg.append('text')
+                        .attr('x', workStartX + workWidth - 5)
+                        .attr('y', workY + (rowHeight - 8) / 2)
+                        .attr('class', 'work-label')
+                        .attr('fill', '#ffffff')
+                        .attr('text-anchor', 'end')
+                        .attr('dy', '0.3em')
+                        .text(workStart + workDuration);
+                }
+                
+                // Название работы слева
+                svg.append('text')
+                    .attr('x', -5)
+                    .attr('y', workY + (rowHeight - 8) / 2)
+                    .attr('class', 'work-label')
+                    .attr('fill', '#e6e6e7')
+                    .attr('text-anchor', 'end')
+                    .attr('dy', '0.3em')
+                    .text(work.number || `${stage.order}.${workIndex + 1}`);
+                
+                // Длительность внутри полосы
+                if (workWidth > 50) {
+                    svg.append('text')
+                        .attr('x', workStartX + workWidth / 2)
+                        .attr('y', workY + (rowHeight - 8) / 2)
+                        .attr('class', 'work-label')
+                        .attr('fill', '#ffffff')
+                        .attr('text-anchor', 'middle')
+                        .attr('dy', '0.3em')
+                        .attr('font-weight', 'bold')
+                        .text(`${workDuration}м`);
+                }
+                
+                // Сохраняем координаты для взаимодействия
+                workCoordinates.push({
+                    id: work.id,
+                    element: workBar,
+                    stageIndex: stageIndex,
+                    stageName: stage.name,
+                    work: work,
+                    x: workStartX,
+                    y: workY,
+                    width: workWidth,
+                    height: rowHeight - 8
+                });
+                
+                // Добавляем обработчики событий
+                workBar
+                    .on('mouseover', function(event) {
+                        d3.select(this)
+                            .attr('filter', 'url(#glow)')
+                            .attr('transform', 'translate(0, -2)');
+                        
+                        showWorkTooltip(work, stage.name, event);
+                    })
+                    .on('mouseout', function() {
+                        d3.select(this)
+                            .attr('filter', null)
+                            .attr('transform', null);
+                        
+                        hideWorkTooltip();
+                    })
+                    .on('click', function(event) {
+                        event.stopPropagation(); // Предотвращаем всплытие
+                        highlightWork(work.id, stageIndex);
+                    });
+            });
+            
+            currentY += stage.works.length * rowHeight + 10;
+        }
+    });
+    
+    // Рисуем ось времени
+    drawTimeAxis(svg, x, height, maxMonths);
+    
+    // Добавляем фильтр для свечения
+    const defs = svg.append('defs');
+    const filter = defs.append('filter')
+        .attr('id', 'glow')
+        .attr('height', '150%')
+        .attr('width', '150%');
+    
+    filter.append('feGaussianBlur')
+        .attr('stdDeviation', '3.5')
+        .attr('result', 'coloredBlur');
+    
+    const feMerge = filter.append('feMerge');
+    feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+    feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+}
+
+function drawGrid(svg, x, height, maxMonths) {
+    // Вертикальные линии для месяцев
+    for (let month = 0; month <= maxMonths; month++) {
+        const xPos = x(month);
+        let strokeWidth = 1;
+        let strokeColor = 'rgba(255, 255, 255, 0.05)';
+        let strokeDasharray = null;
+        
+        if (month % 12 === 0) {
+            // Год
+            strokeWidth = 2;
+            strokeColor = 'rgba(255, 255, 255, 0.12)';
+        } else if (month % 3 === 0) {
+            // Квартал
+            strokeWidth = 1.5;
+            strokeColor = 'rgba(255, 255, 255, 0.08)';
+        }
+        
+        svg.append('line')
+            .attr('x1', xPos)
+            .attr('y1', 0)
+            .attr('x2', xPos)
+            .attr('y2', height)
+            .attr('stroke', strokeColor)
+            .attr('stroke-width', strokeWidth)
+            .attr('stroke-dasharray', strokeDasharray);
+    }
+}
+
+function drawTimeAxis(svg, x, height, maxMonths) {
+    // Ось времени
+    const axis = svg.append('g')
+        .attr('transform', `translate(0,${height})`);
+    
+    // Горизонтальная линия оси
+    axis.append('line')
+        .attr('x1', 0)
+        .attr('x2', x(maxMonths))
+        .attr('stroke', 'rgba(255, 255, 255, 0.3)')
+        .attr('stroke-width', 2);
+    
+    // Деления и подписи
+    for (let month = 0; month <= maxMonths; month++) {
+        const xPos = x(month);
+        
+        // Деления
+        axis.append('line')
+            .attr('x1', xPos)
+            .attr('x2', xPos)
+            .attr('y1', 0)
+            .attr('y2', month % 3 === 0 ? 10 : 5)
+            .attr('stroke', 'rgba(255, 255, 255, 0.3)')
+            .attr('stroke-width', 1);
+        
+        // Подписи для каждого третьего месяца
+        if (month % 3 === 0) {
+            axis.append('text')
+                .attr('x', xPos)
+                .attr('y', 25)
+                .attr('class', 'month-label')
+                .attr('text-anchor', 'middle')
+                .text(getMonthLabel(month));
+            
+            // Номер месяца
+            axis.append('text')
+                .attr('x', xPos)
+                .attr('y', 40)
+                .attr('class', 'month-label')
+                .attr('text-anchor', 'middle')
+                .text(`${month}`);
+        }
+    }
+}
+
+function getAllWorks() {
+    const works = [];
+    const stages = chartData.stages || [];
+    
+    stages.forEach((stage, stageIndex) => {
+        if (stage.works && stage.works.length > 0) {
+            stage.works.forEach(work => {
+                works.push({
+                    ...work,
+                    stageIndex: stageIndex,
+                    stageId: stage.id,
+                    stageName: stage.name,
+                    stageColor: stageColors[stageIndex % stageColors.length]
+                });
+            });
+        }
+    });
+    
+    return works;
+}
+
+function calculateTotalMonths() {
+    let maxMonth = 0;
+    const stages = chartData.stages || [];
+    
+    stages.forEach(stage => {
+        if (stage.start !== undefined && stage.duration) {
+            const stageEnd = stage.start + stage.duration;
+            maxMonth = Math.max(maxMonth, stageEnd);
+        }
+        
+        if (stage.works) {
+            stage.works.forEach(work => {
+                const workStart = work.start_global || 0;
+                const workEnd = workStart + (work.duration || 1);
+                maxMonth = Math.max(maxMonth, workEnd);
+            });
+        }
+    });
+    
+    // Округляем до ближайшего квартала, минимум 12 месяцев
+    return Math.max(12, Math.ceil(maxMonth / 3) * 3);
+}
+
+function getMonthLabel(month) {
+    if (month === 0) return 'Начало';
+    
+    const years = Math.floor(month / 12);
+    const months = month % 12;
+    
+    if (years > 0 && months === 0) {
+        return `${years} год`;
+    } else if (years > 0) {
+        return `${years}г ${months}м`;
+    } else {
+        return `${months} мес`;
+    }
+}
+
+function showWorkTooltip(work, stageName, event) {
+    const tooltip = d3.select('body').append('div')
+        .attr('class', 'work-tooltip')
+        .style('position', 'absolute')
+        .style('left', (event.pageX + 15) + 'px')
+        .style('top', (event.pageY + 15) + 'px');
+    
+    tooltip.html(`
+        <h6>${work.number || ''} ${work.title || 'Без названия'}</h6>
+        <p><strong>Стадия:</strong> ${stageName}</p>
+        <p><strong>Исполнитель:</strong> ${work.executor || 'Не указан'}</p>
+        <p><strong>Длительность:</strong> ${work.duration || 1} месяцев</p>
+        <p><strong>Период:</strong> ${work.start_global || 0} - ${(work.start_global || 0) + (work.duration || 1)} месяц</p>
+        ${work.description ? `<p>${work.description}</p>` : ''}
+    `);
+}
+
+function hideWorkTooltip() {
+    d3.selectAll('.work-tooltip').remove();
+}
+
+function hideWorkTooltip() {
+    d3.selectAll('.work-tooltip').remove();
+}
+
+function highlightWork(workId, stageIndex) {
+    // Открываем стадию
+    openStage(stageIndex);
+    
+    // Находим элемент работы в дорожной карте
+    const workElement = $(`.work-item[data-work-id="${workId}"]`);
+    if (workElement.length) {
+        // Прокручиваем к работе
+        $('html, body').animate({
+            scrollTop: workElement.offset().top - 100
+        }, 500);
+        
+        // Подсвечиваем работу
+        workElement.css({
+            'background-color': 'rgba(224,0,120,0.1)',
+            'border-left-color': '#E00078',
+            'transform': 'translateX(5px)'
+        });
+        
+        // Снимаем подсветку через 3 секунды
+        setTimeout(() => {
+            workElement.css({
+                'background-color': '',
+                'border-left-color': '',
+                'transform': ''
+            });
+        }, 3000);
+    }
+    
+    // Находим и подсвечиваем работу на диаграмме
+    d3.selectAll('.work-bar')
+        .attr('opacity', 0.5);
+    
+    d3.select(`.work-bar[data-work-id="${workId}"]`)
+        .attr('opacity', 1)
+        .attr('filter', 'url(#glow)');
+}
+
+function openStage(stageIndex) {
+    if (stageIndex === null || stageIndex === undefined) return;
+    
+    // Закрываем все стадии
+    $('.stage-content').removeClass('active');
+    $('.stage-header').removeClass('active');
+    $('.stage-header .transition-icon').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+    
+    // Открываем выбранную стадию
+    const stageHeader = $(`.stage-header[data-stage-index="${stageIndex}"]`);
+    const stageContent = $(`#stageContent${stageIndex}`);
+    
+    if (stageHeader.length && stageContent.length) {
+        stageHeader.addClass('active');
+        stageContent.addClass('active');
+        stageHeader.find('.transition-icon').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        
+        currentStageIndex = stageIndex;
+        
+        // Прокручиваем к стадии
+        $('html, body').animate({
+            scrollTop: stageHeader.offset().top - 100
+        }, 500);
+        
+        // Обновляем диаграмму с подсветкой
+        if ($('#highlightCurrent').is(':checked')) {
+            initGanttChart();
+        }
+    }
+}
+
+function setupEventHandlers() {
+    // Обработчики для аккордеона стадий
+    $(document).on('click', '.stage-header', function() {
+        const stageIndex = $(this).data('stage-index');
+        openStage(stageIndex);
+    });
+    
+    // Кнопка экспорта PDF
+    $('#exportPdfBtn').click(function() {
+        $('#exportModal').modal('show');
+    });
+    
+    // Кнопка печати
+    $('#printBtn').click(function() {
+        window.print();
+    });
+    
+    // Начало экспорта
+    $('#startExport').click(function() {
+        const format = $('input[name="exportFormat"]:checked').attr('id');
+        alert(`Экспорт в ${format.replace('format', '').toUpperCase()} начат. Эта функция находится в разработке.`);
+        $('#exportModal').modal('hide');
+    });
+    
+    // Чекбоксы управления диаграммой
+    $('#showDependencies').change(function() {
+        showDependencies = this.checked;
+        // Логика для отображения связей
+        console.log('Показ связей:', this.checked);
+    });
+    
+    $('#showWorks').change(function() {
+        showWorks = this.checked;
+        initGanttChart();
+    });
+    
+    $('#highlightCurrent').change(function() {
+        highlightCurrent = this.checked;
+        if (highlightCurrent) {
+            initGanttChart();
+        } else {
+            // Сбрасываем выделение
+            currentStageIndex = null;
+            initGanttChart();
+        }
+    });
+}
+
+// Функция для пересчета размеров при изменении окна
+$(window).on('resize', function() {
+    if (chartData.stages && chartData.stages.length > 0) {
+        initGanttChart();
+    }
+});
+</script>
+{% endblock %}

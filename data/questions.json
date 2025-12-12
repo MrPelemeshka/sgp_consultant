@@ -1,0 +1,112 @@
+[
+    {
+        "pk": 1,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как оценить запасы угля на участке?",
+            "code": "COAL_RESERVE_QUESTION",
+            "description": "Вопросы, связанные с оценкой запасов угля",
+            "mineral_types": [1],
+            "target_stages": [4]
+        }
+    },
+    {
+        "pk": 2,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как получить лицензию на добычу угля?",
+            "code": "COAL_LICENSE_QUESTION",
+            "description": "Вопросы по лицензированию угледобычи",
+            "mineral_types": [1],
+            "target_stages": [5]
+        }
+    },
+    {
+        "pk": 3,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как подготовить технический проект для угольного месторождения?",
+            "code": "COAL_PROJECT_QUESTION",
+            "description": "Вопросы по проектированию угледобычи",
+            "mineral_types": [1],
+            "target_stages": [6]
+        }
+    },
+    {
+        "pk": 4,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Какие работы нужны для начала строительства угольного карьера?",
+            "code": "COAL_CONSTRUCTION_QUESTION",
+            "description": "Вопросы по строительству угледобывающих объектов",
+            "mineral_types": [1],
+            "target_stages": [7]
+        }
+    },
+    {
+        "pk": 5,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как определить содержание железа в руде?",
+            "code": "IRON_CONTENT_QUESTION",
+            "description": "Вопросы по определению содержания железа",
+            "mineral_types": [2],
+            "target_stages": [13]
+        }
+    },
+    {
+        "pk": 6,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как провести технологические испытания железной руды?",
+            "code": "IRON_TESTS_QUESTION",
+            "description": "Вопросы по технологическим испытаниям",
+            "mineral_types": [2],
+            "target_stages": [13]
+        }
+    },
+    {
+        "pk": 7,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как организовать шлиховое опробование на золото?",
+            "code": "GOLD_SCHLICH_QUESTION",
+            "description": "Вопросы по шлиховому опробованию",
+            "mineral_types": [3],
+            "target_stages": [14]
+        }
+    },
+    {
+        "pk": 8,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как провести геохимические поиски золота?",
+            "code": "GOLD_GEOCHEM_QUESTION",
+            "description": "Вопросы по геохимическим поискам",
+            "mineral_types": [3],
+            "target_stages": [15]
+        }
+    },
+    {
+        "pk": 9,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Какое оборудование нужно для разведки меди?",
+            "code": "COPPER_EQUIPMENT_QUESTION",
+            "description": "Вопросы по оборудованию для разведки меди",
+            "mineral_types": [4],
+            "target_stages": []
+        }
+    },
+    {
+        "pk": 10,
+        "model": "roadmap_app.question",
+        "fields": {
+            "text": "Как оценить экономическую эффективность нефтяного месторождения?",
+            "code": "OIL_ECONOMICS_QUESTION",
+            "description": "Вопросы по экономике нефтедобычи",
+            "mineral_types": [5],
+            "target_stages": []
+        }
+    }
+]

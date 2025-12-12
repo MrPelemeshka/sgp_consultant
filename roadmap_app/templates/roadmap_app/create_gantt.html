@@ -1,0 +1,729 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Создать диаграмму - SGP Консультант{% endblock %}
+
+{% block extra_css %}
+<style>
+    .selection-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255,255,255,0.03);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .selection-card:hover {
+        border-color: rgba(224,0,120,0.3);
+        box-shadow: 0 5px 20px rgba(224,0,120,0.05);
+    }
+    
+    .selection-card.active {
+        border-color: #E00078;
+        background: linear-gradient(180deg, rgba(224,0,120,0.03), rgba(255,255,255,0.01));
+    }
+    
+    .mineral-option {
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .mineral-option:hover {
+        border-color: rgba(224,0,120,0.3);
+        background-color: rgba(224,0,120,0.05);
+    }
+    
+    .mineral-option.selected {
+        border-color: #E00078;
+        background-color: rgba(224,0,120,0.1);
+    }
+    
+    .stage-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        background-color: rgba(52,137,235,0.1);
+        color: #3489eb;
+        font-size: 12px;
+        font-weight: 600;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .stage-badge:hover {
+        background-color: rgba(52,137,235,0.2);
+    }
+    
+    .stage-badge.selected {
+        background-color: #3489eb;
+        color: white;
+    }
+    
+    .question-option {
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .question-option:hover {
+        border-color: rgba(224,0,120,0.3);
+        background-color: rgba(224,0,120,0.05);
+    }
+    
+    .question-option.selected {
+        border-color: #E00078;
+        background-color: rgba(224,0,120,0.1);
+    }
+    
+    .preview-panel {
+        background-color: #151617;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(255,255,255,0.03);
+        min-height: 300px;
+    }
+    
+    .work-item {
+        padding: 8px 12px;
+        border-left: 3px solid #3489eb;
+        background-color: rgba(52,137,235,0.05);
+        margin-bottom: 8px;
+        border-radius: 4px;
+    }
+    
+    .work-duration {
+        font-size: 12px;
+        color: #9aa0a6;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-sm me-3" 
+               style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9aa0a6;">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+            <h1 class="h3 mb-0" style="color: #e6e6e7;">
+                <i class="fas fa-plus-circle me-2"></i>Создать новую диаграмму
+            </h1>
+        </div>
+        
+        <form method="post" id="createGanttForm">
+            {% csrf_token %}
+
+            <!-- Скрытые поля Django формы -->
+            <input type="hidden" name="mineral_type_id" id="id_mineral_type_id" value="">
+            <input type="hidden" name="start_stage_id" id="id_start_stage_id" value="">
+            <input type="hidden" name="question_id" id="id_question_id" value="">
+
+            <!-- 1. Выбор типа полезного ископаемого -->
+            <div class="selection-card active" id="mineralTypeCard">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 40px; height: 40px; background-color: rgba(224,0,120,0.1);">
+                        <span style="color: #E00078; font-weight: 700;">1</span>
+                    </div>
+                    <h5 class="mb-0" style="color: #e6e6e7;">Выберите тип полезного ископаемого</h5>
+                </div>
+                
+                <div id="mineralError" class="alert alert-danger d-none">
+                    Пожалуйста, выберите тип полезного ископаемого
+                </div>
+                
+                <div class="row mt-3">
+                    {% for mineral in mineral_types %}
+                    <div class="col-md-6 mb-3">
+                        <div class="mineral-option" data-mineral-id="{{ mineral.id }}">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 40px; height: 40px; background-color: rgba(224,0,120,0.1);">
+                                    <i class="fas fa-mountain" style="color: #E00078;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" style="color: #e6e6e7;">{{ mineral.name }}</h6>
+                                    <p class="text-muted small mb-0">{{ mineral.description|truncatechars:80 }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-3 text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Выберите тип полезного ископаемого для вашего проекта
+                </div>
+            </div>
+            
+            <!-- 2. Выбор стадии проекта -->
+            <div class="selection-card" id="projectStageCard" style="display: none;">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 40px; height: 40px; background-color: rgba(52,137,235,0.1);">
+                        <span style="color: #3489eb; font-weight: 700;">2</span>
+                    </div>
+                    <h5 class="mb-0" style="color: #e6e6e7;">Выберите текущую стадию проекта</h5>
+                </div>
+                
+                <div id="stageError" class="alert alert-danger d-none">
+                    Пожалуйста, выберите стадию проекта
+                </div>
+                
+                <div id="stageOptions" class="mt-3">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Сначала выберите тип полезного ископаемого</p>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Укажите, на какой стадии находится ваш проект сейчас
+                </div>
+            </div>
+            
+            <!-- 3. Выбор вопроса (опционально) -->
+            <div class="selection-card" id="questionCard" style="display: none;">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 40px; height: 40px; background-color: rgba(0,210,106,0.1);">
+                        <span style="color: #00d26a; font-weight: 700;">3</span>
+                    </div>
+                    <h5 class="mb-0" style="color: #e6e6e7;">Выберите целевой вопрос (опционально)</h5>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="skipQuestion">
+                    <label class="form-check-label" for="skipQuestion" style="color: #e6e6e7;">
+                        Пропустить этот шаг
+                    </label>
+                </div>
+                
+                <div id="questionOptions" class="mt-3">
+                    <div class="text-center py-4">
+                        <p class="text-muted">Сначала выберите тип полезного ископаемого</p>
+                    </div>
+                </div>
+                
+                <div class="mt-3 text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Укажите, какой вопрос вы хотите решить с помощью диаграммы
+                </div>
+            </div>
+            
+            <!-- 4. Название проекта -->
+            <div class="selection-card" id="titleCard" style="display: none;">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                        style="width: 40px; height: 40px; background-color: rgba(255,193,7,0.1);">
+                        <span style="color: #ffc107; font-weight: 700;">4</span>
+                    </div>
+                    <h5 class="mb-0" style="color: #e6e6e7;">Название вашего проекта</h5>
+                </div>
+                
+                <div class="mt-3">
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.title.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text text-muted small mt-2">
+                        Назовите свой проект для удобного поиска в будущем
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Кнопка создания -->
+            <div class="mt-4" id="createButtonContainer" style="display: none;">
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-lg py-3" 
+                            style="background-color: #E00078; color: white; font-weight: 700; border-radius: 10px;">
+                        <i class="fas fa-rocket me-2"></i>Создать диаграмму Ганта
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Предпросмотр -->
+    <div class="col-lg-4">
+        <div class="sticky-top" style="top: 20px;">
+            <div class="preview-panel">
+                <h5 class="mb-3" style="color: #e6e6e7;">
+                    <i class="fas fa-eye me-2"></i>Предпросмотр
+                </h5>
+                
+                <div id="previewContent">
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-gantt" style="font-size: 48px; color: rgba(255,255,255,0.1);"></i>
+                        <p class="text-muted mt-3 mb-0">Выберите параметры для предпросмотра</p>
+                    </div>
+                </div>
+                
+                <div id="selectedParams" class="mt-4" style="display: none;">
+                    <h6 class="mb-3 small text-muted">Выбранные параметры:</h6>
+                    <div id="paramsList"></div>
+                </div>
+            </div>
+            
+            <!-- Подсказки -->
+            <div class="preview-panel mt-3">
+                <h6 class="mb-3" style="color: #e6e6e7;">
+                    <i class="fas fa-lightbulb me-2"></i>Подсказки
+                </h6>
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle me-2" style="color: #00d26a;"></i>
+                        Выберите тип полезного ископаемого
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle me-2" style="color: #3489eb;"></i>
+                        Укажите текущую стадию проекта
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle me-2" style="color: #00d26a;"></i>
+                        Определите целевой вопрос (опционально)
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle me-2" style="color: #ffc107;"></i>
+                        Назовите проект и создайте диаграмму
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let selectedMineral = null;
+    let selectedStage = null;
+    let selectedQuestion = null;
+    
+    // Инициализация скрытых полей
+    // В JavaScript create_gantt.html обновите функцию updateHiddenFields
+    function updateHiddenFields() {
+        $('#id_mineral_type_id').val(selectedMineral || '');
+        $('#id_start_stage_id').val(selectedStage || '');
+        $('#id_question_id').val(selectedQuestion || '');
+        
+        // Отладочный вывод
+        console.log('Скрытые поля установлены:', {
+            mineral: selectedMineral,
+            stage: selectedStage,
+            question: selectedQuestion
+        });
+    }
+    
+    // Выбор типа ПИ
+    $('.mineral-option').click(function() {
+        const mineralId = $(this).data('mineral-id');
+        const mineralName = $(this).find('h6').text();
+        
+        // Сбрасываем предыдущий выбор
+        $('.mineral-option').removeClass('selected');
+        $(this).addClass('selected');
+        
+        selectedMineral = mineralId;
+        $('#selectedMineral').val(mineralId);
+        $('#mineralError').hide();
+        
+        // Обновляем скрытые поля
+        updateHiddenFields();
+        
+        // Активируем карточку выбора стадии
+        $('#projectStageCard').slideDown();
+        $('#mineralTypeCard').addClass('active');
+        
+        // Загружаем стадии для выбранного типа ПИ
+        loadStages(mineralId);
+        
+        // Обновляем предпросмотр
+        updatePreview();
+    });
+    
+    // Загрузка стадий через AJAX
+    function loadStages(mineralId) {
+        $('#stageOptions').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="text-muted small mt-2">Загрузка доступных этапов...</p>
+            </div>
+        `);
+        
+        $.ajax({
+            url: '{% url "get_stages" %}',
+            data: { mineral_type: mineralId },
+            success: function(data) {
+                if (data.stages && data.stages.length > 0) {
+                    let stagesHtml = '<div class="row">';
+                    
+                    // Группируем этапы для лучшего отображения
+                    data.stages.forEach(function(stage) {
+                        stagesHtml += `
+                            <div class="col-md-6 mb-3">
+                                <div class="stage-badge" data-stage-id="${stage.id}" 
+                                    title="${stage.description || ''}">
+                                    ${stage.order}. ${stage.name}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    stagesHtml += '</div>';
+                    $('#stageOptions').html(stagesHtml);
+                    
+                    // Обработка выбора этапа
+                    $('.stage-badge').click(function() {
+                        const stageId = $(this).data('stage-id');
+                        const stageName = $(this).text();
+                        
+                        $('.stage-badge').removeClass('selected');
+                        $(this).addClass('selected');
+                        
+                        selectedStage = stageId;
+                        $('#stageError').hide();
+                        
+                        // Обновляем скрытые поля
+                        updateHiddenFields();
+                        
+                        // Активируем карточку выбора вопроса
+                        $('#questionCard').slideDown();
+                        $('#projectStageCard').addClass('active');
+                        
+                        // Загружаем вопросы
+                        loadQuestions(mineralId);
+                        
+                        // Показываем карточку названия проекта
+                        $('#titleCard').slideDown();
+                        $('#createButtonContainer').slideDown();
+                        
+                        // Обновляем предпросмотр
+                        updatePreview();
+                    });
+                } else {
+                    $('#stageOptions').html(`
+                        <div class="text-center py-4">
+                            <p class="text-muted">Нет доступных этапов для выбранного типа ПИ</p>
+                        </div>
+                    `);
+                }
+            },
+            error: function() {
+                $('#stageOptions').html(`
+                    <div class="text-center py-4">
+                        <p class="text-danger">Ошибка загрузки этапов</p>
+                    </div>
+                `);
+            }
+        });
+    }
+    
+    // Загрузка вопросов через AJAX
+    function loadQuestions(mineralId) {
+        $('#questionOptions').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="text-muted small mt-2">Загрузка доступных вопросов...</p>
+            </div>
+        `);
+        
+        $.ajax({
+            url: '{% url "get_questions" %}',
+            data: { mineral_type: mineralId },
+            success: function(data) {
+                if (data.questions && data.questions.length > 0) {
+                    let questionsHtml = '<div class="mb-3">';
+                    questionsHtml += '<div class="question-option" data-question-id="0">';
+                    questionsHtml += '<div class="form-check">';
+                    questionsHtml += '<input class="form-check-input" type="radio" name="question" id="questionNone" value="0">';
+                    questionsHtml += '<label class="form-check-label" for="questionNone" style="color: #e6e6e7;">';
+                    questionsHtml += 'Без целевого вопроса';
+                    questionsHtml += '</label>';
+                    questionsHtml += '</div>';
+                    questionsHtml += '</div>';
+                    
+                    data.questions.forEach(function(question) {
+                        questionsHtml += `
+                            <div class="question-option" data-question-id="${question.id}">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="question" id="question${question.id}" value="${question.id}">
+                                    <label class="form-check-label" for="question${question.id}" style="color: #e6e6e7;">
+                                        ${question.text}
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    questionsHtml += '</div>';
+                    
+                    $('#questionOptions').html(questionsHtml);
+                    
+                    // Обработка выбора вопроса
+                    $('.question-option').click(function() {
+                        const questionId = $(this).data('question-id');
+                        
+                        // Сбрасываем предыдущий выбор
+                        $('.question-option').removeClass('selected');
+                        $(this).addClass('selected');
+                        
+                        // Выбираем радио-кнопку
+                        $(this).find('input[type="radio"]').prop('checked', true);
+                        
+                        if (questionId === 0) {
+                            selectedQuestion = null;
+                        } else {
+                            selectedQuestion = questionId;
+                        }
+                        
+                        // Обновляем скрытые поля
+                        updateHiddenFields();
+                        
+                        // Обновляем предпросмотр
+                        updatePreview();
+                    });
+                    
+                    // Выбираем "Без целевого вопроса" по умолчанию
+                    $('.question-option[data-question-id="0"]').click();
+                } else {
+                    $('#questionOptions').html(`
+                        <div class="text-center py-4">
+                            <p class="text-muted">Нет доступных вопросов для выбранного типа ПИ</p>
+                        </div>
+                    `);
+                }
+            },
+            error: function() {
+                $('#questionOptions').html(`
+                    <div class="text-center py-4">
+                        <p class="text-danger">Ошибка загрузки вопросов</p>
+                    </div>
+                `);
+            }
+        });
+    }
+    
+    // Загрузка работ для предпросмотра
+    function loadWorksForPreview(mineralId, stageId, questionId = null) {
+        $.ajax({
+            url: '{% url "get_works" %}',
+            data: {
+                mineral_type: mineralId,
+                stage: stageId,
+                question: questionId
+            },
+            success: function(data) {
+                if (data.works && data.works.length > 0) {
+                    updatePreviewWithWorks(data.works);
+                } else {
+                    $('#previewContent').html(`
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: rgba(255,193,7,0.5);"></i>
+                            <p class="text-muted mt-3 mb-0">Нет работ для отображения</p>
+                        </div>
+                    `);
+                }
+            },
+            error: function() {
+                $('#previewContent').html(`
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: rgba(255,193,7,0.5);"></i>
+                        <p class="text-danger mt-3 mb-0">Ошибка загрузки работ</p>
+                    </div>
+                `);
+            }
+        });
+    }
+    
+    // Обновление предпросмотра
+    function updatePreview() {
+        // Обновляем список выбранных параметров
+        let paramsHtml = '';
+        
+        if (selectedMineral) {
+            const mineralName = $('.mineral-option.selected h6').text();
+            paramsHtml += `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-2" 
+                         style="width: 24px; height: 24px; background-color: rgba(224,0,120,0.1);">
+                        <i class="fas fa-mountain" style="font-size: 12px; color: #E00078;"></i>
+                    </div>
+                    <span style="color: #e6e6e7; font-size: 14px;">${mineralName}</span>
+                </div>
+            `;
+        }
+        
+        if (selectedStage) {
+            const stageName = $('.stage-badge.selected').text();
+            paramsHtml += `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-2" 
+                         style="width: 24px; height: 24px; background-color: rgba(52,137,235,0.1);">
+                        <i class="fas fa-project-diagram" style="font-size: 12px; color: #3489eb;"></i>
+                    </div>
+                    <span style="color: #e6e6e7; font-size: 14px;">${stageName}</span>
+                </div>
+            `;
+        }
+        
+        if (selectedQuestion) {
+            const questionText = $('.question-option.selected .form-check-label').text();
+            paramsHtml += `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-2" 
+                         style="width: 24px; height: 24px; background-color: rgba(0,210,106,0.1);">
+                        <i class="fas fa-question-circle" style="font-size: 12px; color: #00d26a;"></i>
+                    </div>
+                    <span style="color: #e6e6e7; font-size: 14px;">${questionText}</span>
+                </div>
+            `;
+        }
+        
+        $('#paramsList').html(paramsHtml);
+        
+        if (paramsHtml) {
+            $('#selectedParams').show();
+        }
+    }
+    
+    // Обновление предпросмотра с работами
+    function updatePreviewWithWorks(works) {
+        let worksHtml = '<div class="mb-3">';
+        
+        // Группируем работы по месяцам
+        const worksByMonth = {};
+        let totalDuration = 0;
+        
+        works.forEach(function(work) {
+            totalDuration += work.duration;
+            
+            if (!worksByMonth[work.start]) {
+                worksByMonth[work.start] = [];
+            }
+            worksByMonth[work.start].push(work);
+        });
+        
+        // Сортируем по месяцам
+        const sortedMonths = Object.keys(worksByMonth).sort((a, b) => a - b);
+        
+        sortedMonths.forEach(function(month) {
+            worksHtml += `<div class="mb-3">`;
+            worksHtml += `<div class="small text-muted mb-2">Месяц ${month}:</div>`;
+            
+            worksByMonth[month].forEach(function(work) {
+                worksHtml += `
+                    <div class="work-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span style="color: #e6e6e7; font-weight: 500;">${work.number}. ${work.title}</span>
+                            <span class="work-duration">${work.duration} мес</span>
+                        </div>
+                        <div class="small text-muted mt-1">${work.executor}</div>
+                    </div>
+                `;
+            });
+            
+            worksHtml += `</div>`;
+        });
+        
+        worksHtml += '</div>';
+        worksHtml += `<div class="mt-3 p-3" style="background-color: rgba(224,0,120,0.05); border-radius: 8px;">`;
+        worksHtml += `<div class="small text-muted">Всего работ: ${works.length}</div>`;
+        worksHtml += `<div class="small text-muted">Общая длительность: ${totalDuration} месяцев</div>`;
+        worksHtml += `</div>`;
+        
+        $('#previewContent').html(worksHtml);
+    }
+    
+    // Обработка пропуска выбора вопроса
+    $('#skipQuestion').change(function() {
+        if (this.checked) {
+            $('#questionOptions').slideUp();
+            selectedQuestion = null;
+            updateHiddenFields();
+            updatePreview();
+        } else {
+            $('#questionOptions').slideDown();
+        }
+    });
+    
+    // Валидация формы перед отправкой
+    $('#createGanttForm').submit(function(e) {
+        let valid = true;
+        
+        // Скрываем все ошибки
+        $('.invalid-feedback').hide();
+        $('.is-invalid').removeClass('is-invalid');
+        
+        // Проверяем выбор типа ПИ
+        if (!selectedMineral) {
+            $('#mineralError').removeClass('d-none').show();
+            $('#mineralTypeCard').animate({scrollTop: 0}, 500);
+            valid = false;
+        }
+        
+        // Проверяем выбор стадии
+        if (!selectedStage) {
+            $('#stageError').removeClass('d-none').show();
+            $('#projectStageCard').animate({scrollTop: 0}, 500);
+            valid = false;
+        }
+        
+        // Проверяем название проекта
+        const projectTitle = $('#id_title').val().trim();
+        if (!projectTitle) {
+            $('#id_title').addClass('is-invalid');
+            $('#titleCard').append('<div class="invalid-feedback d-block">Введите название проекта</div>');
+            $('#titleCard').animate({scrollTop: 0}, 500);
+            valid = false;
+        } else {
+            $('#id_title').val(projectTitle);
+        }
+        
+        // Обновляем значения в скрытых полях
+        updateHiddenFields();
+        
+        if (!valid) {
+            e.preventDefault();
+            // Прокручиваем к первой ошибке
+            $('html, body').animate({
+                scrollTop: $('.selection-card:visible').first().offset().top - 100
+            }, 500);
+            
+            // Показываем сообщение
+            if (!selectedMineral || !selectedStage) {
+                alert('Пожалуйста, заполните все обязательные поля');
+            }
+        } else {
+            // Показываем индикатор загрузки
+            $('button[type="submit"]').html(`
+                <div class="spinner-border spinner-border-sm me-2" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                Создание диаграммы...
+            `).prop('disabled', true);
+        }
+    });
+});
+</script>
+{% endblock %}

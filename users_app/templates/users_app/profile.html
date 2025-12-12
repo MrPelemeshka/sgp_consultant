@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Левая колонка - информация профиля -->
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow h-100">
+            <div class="card-header py-4 text-white text-center" style="background-color: #151617; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <div class="position-relative">
+                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3" 
+                         style="width: 100px; height: 100px; background-color: rgba(224,0,120,0.1);">
+                        <i class="fas fa-user-circle" style="font-size: 60px; color: #E00078;"></i>
+                    </div>
+                    {% if is_admin %}
+                    <span class="position-absolute top-0 end-0 badge rounded-pill" 
+                        style="background-color: #E00078; color: white;">
+                        Администратор
+                    </span>
+                    {% elif is_moderator %}
+                    <span class="position-absolute top-0 end-0 badge rounded-pill" 
+                        style="background-color: #3489eb; color: white;">
+                        Модератор
+                    </span>
+                    {% endif %}
+                </div>
+                <h5 class="mb-1" style="color: #e6e6e7;">{{ user.get_full_name|default:user.username }}</h5>
+                <p class="small mb-0" style="color: #9aa0a6;">@{{ user.username }}</p>
+            </div>
+            
+            <div class="card-body" style="background-color: #1a1b1c;">
+                <div class="mb-4">
+                    <h6 class="mb-3" style="color: #e6e6e7; font-weight: 600;">
+                        <i class="fas fa-info-circle me-2"></i>Информация
+                    </h6>
+                    
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">Email</p>
+                        <p class="mb-0" style="color: #e6e6e7;">
+                            {% if user.email %}
+                                {{ user.email }}
+                            {% else %}
+                                <span class="text-muted">Не указан</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">Телефон</p>
+                        <p class="mb-0" style="color: #e6e6e7;">
+                            {% if user.phone %}
+                                {{ user.phone }}
+                            {% else %}
+                                <span class="text-muted">Не указан</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">Компания</p>
+                        <p class="mb-0" style="color: #e6e6e7;">
+                            {% if user.company %}
+                                {{ user.company }}
+                            {% else %}
+                                <span class="text-muted">Не указана</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">Должность</p>
+                        <p class="mb-0" style="color: #e6e6e7;">
+                            {% if user.position %}
+                                {{ user.position }}
+                            {% else %}
+                                <span class="text-muted">Не указана</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">Дата регистрации</p>
+                        <p class="mb-0" style="color: #e6e6e7;">
+                            {{ user.date_joined|date:"d.m.Y" }}
+                        </p>
+                    </div>
+                </div>
+                
+                {% if is_moderator or is_admin %}
+                <div class="border-top pt-3">
+                    <h6 class="mb-3" style="color: #e6e6e7; font-weight: 600;">
+                        <i class="fas fa-shield-alt me-2"></i>Права доступа
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle me-2" style="color: #00d26a;"></i>
+                            <span style="color: #e6e6e7;">Управление контентом</span>
+                        </li>
+                        {% if user.is_admin %}
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle me-2" style="color: #00d26a;"></i>
+                            <span style="color: #e6e6e7;">Администрирование системы</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Правая колонка - редактирование профиля -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow mb-4">
+            <div class="card-header py-4 text-white" style="background-color: #151617; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <h5 class="mb-0" style="color: #e6e6e7;">
+                    <i class="fas fa-edit me-2"></i>Редактирование профиля
+                </h5>
+            </div>
+            
+            <div class="card-body p-4 p-md-5" style="background-color: #1a1b1c;">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-muted mb-1">Имя</label>
+                            <input type="text" name="first_name" class="form-control" 
+                                   value="{{ user.first_name|default:'' }}"
+                                   placeholder="Ваше имя">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-muted mb-1">Фамилия</label>
+                            <input type="text" name="last_name" class="form-control" 
+                                   value="{{ user.last_name|default:'' }}"
+                                   placeholder="Ваша фамилия">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-1">Email</label>
+                        <input type="email" name="email" class="form-control" 
+                               value="{{ user.email|default:'' }}"
+                               placeholder="example@domain.com">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-muted mb-1">Телефон</label>
+                            <input type="text" name="phone" class="form-control" 
+                                   value="{{ user.phone|default:'' }}"
+                                   placeholder="+7 (___) ___-__-__">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small text-muted mb-1">Компания</label>
+                            <input type="text" name="company" class="form-control" 
+                                   value="{{ user.company|default:'' }}"
+                                   placeholder="Название компании">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label small text-muted mb-1">Должность</label>
+                        <input type="text" name="position" class="form-control" 
+                               value="{{ user.position|default:'' }}"
+                               placeholder="Ваша должность">
+                    </div>
+                    
+                    <div class="d-grid gap-2 mb-4">
+                        <button type="submit" class="btn py-3" 
+                                style="background-color: #E00078; color: white; font-weight: 600;">
+                            <i class="fas fa-save me-2"></i>Сохранить изменения
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Смена пароля -->
+                <div class="border-top pt-4">
+                    <h6 class="mb-3" style="color: #e6e6e7; font-weight: 600;">
+                        <i class="fas fa-key me-2"></i>Смена пароля
+                    </h6>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label small text-muted mb-1">Текущий пароль</label>
+                            <div class="input-group">
+                                <input type="password" name="current_password" class="form-control" 
+                                       placeholder="Введите текущий пароль" id="currentPassword">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-muted mb-1">Новый пароль</label>
+                                <div class="input-group">
+                                    <input type="password" name="new_password" class="form-control" 
+                                           placeholder="Новый пароль" id="newPassword">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-muted mb-1">Подтверждение</label>
+                                <div class="input-group">
+                                    <input type="password" name="confirm_password" class="form-control" 
+                                           placeholder="Повторите пароль" id="confirmPassword">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn py-3" 
+                                    style="background-color: transparent; border: 2px solid rgba(224,0,120,0.5); color: #e6e6e7; font-weight: 600;">
+                                <i class="fas fa-key me-2"></i>Изменить пароль
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика пользователя -->
+        <div class="card border-0 shadow">
+            <div class="card-header py-4 text-white" style="background-color: #151617; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <h5 class="mb-0" style="color: #e6e6e7;">
+                    <i class="fas fa-chart-line me-2"></i>Ваша активность
+                </h5>
+            </div>
+            
+            <div class="card-body p-4" style="background-color: #1a1b1c;">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded" style="background-color: rgba(224,0,120,0.1);">
+                            <h3 class="mb-1" style="color: #e6e6e7;">{{ user.gantt_charts.count }}</h3>
+                            <p class="small mb-0" style="color: #9aa0a6;">Диаграмм Ганта</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded" style="background-color: rgba(52,137,235,0.1);">
+                            <h3 class="mb-1" style="color: #e6e6e7;">
+                                {{ user.date_joined|date:"d.m.Y" }}
+                            </h3>
+                            <p class="small mb-0" style="color: #9aa0a6;">Дата регистрации</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="p-3 rounded" style="background-color: rgba(0,210,106,0.1);">
+                            <h3 class="mb-1" style="color: #e6e6e7;">
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"d.m.Y" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </h3>
+                            <p class="small mb-0" style="color: #9aa0a6;">Последний вход</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePassword(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const icon = passwordInput.nextElementSibling.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Автофокус на первое поле
+$(document).ready(function() {
+    $('input[name="first_name"]').focus();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+[
+    {
+        "pk": 1,
+        "model": "roadmap_app.mineraltype",
+        "fields": {
+            "name": "Уголь",
+            "code": "COAL",
+            "description": "Каменный и бурый уголь для энергетики и металлургии"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "roadmap_app.mineraltype",
+        "fields": {
+            "name": "Железная руда",
+            "code": "IRON_ORE",
+            "description": "Железные руды для металлургической промышленности"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "roadmap_app.mineraltype",
+        "fields": {
+            "name": "Золото",
+            "code": "GOLD",
+            "description": "Россыпное и рудное золото"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "roadmap_app.mineraltype",
+        "fields": {
+            "name": "Медь",
+            "code": "COPPER",
+            "description": "Медные и медно-порфировые руды"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "roadmap_app.mineraltype",
+        "fields": {
+            "name": "Нефть",
+            "code": "OIL",
+            "description": "Нефтяные месторождения"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "roadmap_app.mineraltype",
+        "fields": {
+            "name": "Газ",
+            "code": "GAS",
+            "description": "Газовые и газоконденсатные месторождения"
+        }
+    }
+]

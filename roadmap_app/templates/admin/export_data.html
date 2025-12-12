@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Экспорт данных - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-sm me-3" 
+               style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9aa0a6;">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+            <h1 class="h3 mb-0" style="color: #e6e6e7;">
+                <i class="fas fa-file-export me-2"></i>Экспорт данных
+            </h1>
+        </div>
+        
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 1: Выберите тип данных для экспорта</h5>
+                        {{ form.model_type }}
+                        <div class="form-text text-muted small mt-1">
+                            Выберите тип данных, который хотите экспортировать
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 2: Выберите формат экспорта</h5>
+                        {{ form.format }}
+                        <div class="form-text text-muted small mt-1">
+                            JSON - для обмена данными между системами<br>
+                            CSV - для редактирования в Excel<br>
+                            Excel - для полноценной работы с таблицами
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 3: Настройки экспорта</h5>
+                        <div class="form-check">
+                            {{ form.include_all }}
+                            <label class="form-check-label" for="{{ form.include_all.id_for_label }}" 
+                                   style="color: #e6e6e7;">
+                                Экспортировать все поля
+                            </label>
+                        </div>
+                        <div class="form-text text-muted small mt-1">
+                            Если не выбрано, будут экспортированы только основные поля
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Информация о форматах</h5>
+                        <div class="table-responsive">
+                            <table class="table table-borderless" style="color: #e6e6e7;">
+                                <thead>
+                                    <tr>
+                                        <th>Формат</th>
+                                        <th>Использование</th>
+                                        <th>Ограничения</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>JSON</td>
+                                        <td>Импорт/экспорт между системами, резервные копии</td>
+                                        <td>Не поддерживает изображения</td>
+                                    </tr>
+                                    <tr>
+                                        <td>CSV</td>
+                                        <td>Редактирование в текстовых редакторах и Excel</td>
+                                        <td>Не поддерживает вложенные структуры</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Excel</td>
+                                        <td>Полноценная работа с таблицами, форматирование</td>
+                                        <td>Может быть тяжелым для больших данных</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg py-3" 
+                                style="background-color: #E00078; color: white; font-weight: 700;">
+                            <i class="fas fa-download me-2"></i>Скачать файл экспорта
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4" style="background-color: #151617;">
+            <div class="card-body">
+                <h5 class="mb-3" style="color: #e6e6e7;">
+                    <i class="fas fa-lightbulb me-2"></i>Подсказки
+                </h5>
+                <ul class="list-unstyled small text-muted mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle me-2" style="color: #00d26a;"></i>
+                        Экспорт в JSON сохраняет все связи между данными
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle me-2" style="color: #3489eb;"></i>
+                        CSV подходит для дальнейшего редактирования данных
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle me-2" style="color: #E00078;"></i>
+                        Excel сохраняет форматирование и несколько листов
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle me-2" style="color: #ffc107;"></i>
+                        Регулярно делайте экспорт для создания резервных копий
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Динамическое изменение описания в зависимости от выбранного типа данных
+    $('#id_model_type').change(function() {
+        const selectedType = $(this).val();
+        const descriptions = {
+            'mineral_type': 'Типы полезных ископаемых с описаниями',
+            'stage': 'Этапы проектов с временными параметрами',
+            'work': 'Конкретные работы внутри этапов',
+            'question': 'Вопросы с привязкой к типам ПИ и этапам',
+            'faq': 'Часто задаваемые вопросы и ответы'
+        };
+        
+        const description = descriptions[selectedType] || 'Выбранный тип данных';
+        $('.form-text').first().text(`Будет экспортирован: ${description}`);
+    }).trigger('change');
+});
+</script>
+{% endblock %}

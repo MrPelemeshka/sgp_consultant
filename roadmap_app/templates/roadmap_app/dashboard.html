@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои диаграммы - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h3 mb-0" style="color: #e6e6e7;">
+                <i class="fas fa-chart-gantt me-2"></i>Мои диаграммы Ганта
+            </h1>
+            <a href="{% url 'create_gantt' %}" class="btn px-4 py-2" 
+               style="background-color: #E00078; color: white; font-weight: 600;">
+                <i class="fas fa-plus me-2"></i>Создать новую
+            </a>
+        </div>
+        <p class="text-muted small mb-0 mt-2">
+            Здесь хранятся все созданные вами дорожные карты
+        </p>
+    </div>
+</div>
+
+{% if charts %}
+<div class="row">
+    {% for chart in charts %}
+    <div class="col-xl-4 col-lg-6 mb-4">
+        <div class="card border-0 shadow h-100" 
+             style="background-color: #151617; border: 1px solid rgba(255,255,255,0.03);">
+            <div class="card-header py-3" style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" style="color: #e6e6e7; font-size: 1rem;">
+                        {{ chart.title|truncatechars:30 }}
+                    </h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm p-0" type="button" data-bs-toggle="dropdown" 
+                                style="color: #9aa0a6;">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'view_gantt' chart.id %}">
+                                    <i class="fas fa-eye me-2"></i>Просмотр
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-edit me-2"></i>Редактировать
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'delete_gantt' chart.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="button" class="dropdown-item text-danger" 
+                                            onclick="confirmDelete('{{ chart.title }}', this)">
+                                        <i class="fas fa-trash me-2"></i>Удалить
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge rounded-pill me-2" 
+                              style="background-color: rgba(224,0,120,0.2); color: #E00078;">
+                            <i class="fas fa-mountain me-1"></i>
+                            {{ chart.mineral_type.name|default:"Не указан" }}
+                        </span>
+                        <span class="badge rounded-pill" 
+                              style="background-color: rgba(52,137,235,0.2); color: #3489eb;">
+                            <i class="fas fa-project-diagram me-1"></i>
+                            {{ chart.project_stage.name|default:"Не указана" }}
+                        </span>
+                    </div>
+                    
+                    {% if chart.question %}
+                    <div class="mb-2">
+                        <small class="text-muted">Вопрос:</small>
+                        <p class="mb-0 small" style="color: #e6e6e7;">
+                            {{ chart.question.text|truncatechars:60 }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="border-top pt-3">
+                    <div class="row small text-muted">
+                        <div class="col-6">
+                            <i class="far fa-calendar me-1"></i>
+                            Создана: {{ chart.created_at|date:"d.m.Y" }}
+                        </div>
+                        <div class="col-6 text-end">
+                            <i class="far fa-clock me-1"></i>
+                            Обновлена: {{ chart.updated_at|date:"d.m.Y" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer py-3" style="border-top: 1px solid rgba(255,255,255,0.03);">
+                <div class="d-grid">
+                    <a href="{% url 'view_gantt' chart.id %}" class="btn btn-sm py-2" 
+                       style="background-color: rgba(224,0,120,0.1); color: #E00078; border: 1px solid rgba(224,0,120,0.3);">
+                        <i class="fas fa-external-link-alt me-2"></i>Открыть диаграмму
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow text-center py-5" 
+             style="background-color: #151617; border: 2px dashed rgba(255,255,255,0.1);">
+            <div class="card-body">
+                <div class="mb-4">
+                    <i class="fas fa-chart-gantt" style="font-size: 72px; color: rgba(255,255,255,0.1);"></i>
+                </div>
+                <h4 class="mb-3" style="color: #e6e6e7;">У вас еще нет диаграмм</h4>
+                <p class="text-muted mb-4">
+                    Создайте свою первую диаграмму Ганта для проекта недропользования
+                </p>
+                <a href="{% url 'create_gantt' %}" class="btn btn-lg px-4 py-3" 
+                   style="background-color: #E00078; color: white; font-weight: 600;">
+                    <i class="fas fa-plus me-2"></i>Создать первую диаграмму
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Пагинация (если нужно) -->
+{% if charts.paginator.num_pages > 1 %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="Навигация по страницам">
+            <ul class="pagination justify-content-center">
+                {% if charts.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ charts.previous_page_number }}" 
+                       style="background-color: #151617; border-color: rgba(255,255,255,0.1); color: #e6e6e7;">
+                        &laquo; Назад
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in charts.paginator.page_range %}
+                    {% if charts.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link" 
+                              style="background-color: #E00078; border-color: #E00078;">
+                            {{ num }}
+                        </span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}"
+                           style="background-color: #151617; border-color: rgba(255,255,255,0.1); color: #e6e6e7;">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if charts.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ charts.next_page_number }}"
+                       style="background-color: #151617; border-color: rgba(255,255,255,0.1); color: #e6e6e7;">
+                        Вперед &raquo;
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(chartTitle, button) {
+    if (confirm(`Вы уверены, что хотите удалить диаграмму "${chartTitle}"?`)) {
+        button.closest('form').submit();
+    }
+}
+
+// Добавляем подтверждение при переходе по ссылке редактирования
+$(document).ready(function() {
+    $('a[href="#"]').on('click', function(e) {
+        e.preventDefault();
+        alert('Функция редактирования диаграмм будет доступна в следующей версии.');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Импорт данных - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-sm me-3" 
+               style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #9aa0a6;">
+                <i class="fas fa-arrow-left me-2"></i>Назад
+            </a>
+            <h1 class="h3 mb-0" style="color: #e6e6e7;">
+                <i class="fas fa-file-import me-2"></i>Импорт данных
+            </h1>
+        </div>
+        
+        <div class="card border-0 shadow" style="background-color: #151617;">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 1: Выберите тип данных</h5>
+                        {{ form.model_type }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 2: Выберите файл</h5>
+                        <div class="mb-3">
+                            {{ form.import_file }}
+                            <div class="form-text text-muted small mt-1">
+                                Поддерживаемые форматы: JSON, CSV, Excel (.xlsx, .xls)
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" style="background-color: rgba(52,137,235,0.1); border-color: rgba(52,137,235,0.2); color: #3489eb;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Вы можете скачать шаблон для заполнения в разделе "Управление данными"
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Шаг 3: Настройки импорта</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small text-muted">Режим импорта</label>
+                                {{ form.import_mode }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check pt-4">
+                                    {{ form.validate_data }}
+                                    <label class="form-check-label" for="{{ form.validate_data.id_for_label }}" 
+                                           style="color: #e6e6e7;">
+                                        Валидировать данные перед импортом
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3" style="color: #e6e6e7;">Структура файла</h5>
+                        <div class="table-responsive">
+                            <table class="table table-borderless" style="color: #e6e6e7;">
+                                <thead>
+                                    <tr>
+                                        <th>Тип данных</th>
+                                        <th>Обязательные поля</th>
+                                        <th>Формат</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Типы ПИ</td>
+                                        <td>name, code</td>
+                                        <td>JSON: [{"name": "...", "code": "..."}]</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Этапы</td>
+                                        <td>mineral_type, name, code, order</td>
+                                        <td>CSV: mineral_type,name,code,order</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Работы</td>
+                                        <td>stage, number, title</td>
+                                        <td>Excel: колонки с названиями полей</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg py-3" 
+                                style="background-color: #00d26a; color: white; font-weight: 700;">
+                            <i class="fas fa-upload me-2"></i>Начать импорт
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

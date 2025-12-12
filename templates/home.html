@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная - SGP Консультант{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Герой-секция -->
+        <div class="card mb-5 border-0" style="background: linear-gradient(135deg, #151617 0%, #0b0c0d 100%);">
+            <div class="card-body p-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <h1 class="display-5 fw-bold mb-4" style="color: #e6e6e7;">
+                            Интерактивная дорожная карта для недропользователей
+                        </h1>
+                        <p class="lead mb-4" style="color: #9aa0a6;">
+                            Создавайте персонализированные диаграммы Ганта для ваших проектов. 
+                            Выбирайте тип полезного ископаемого, стадию проекта и решаемые вопросы.
+                        </p>
+                        
+                        {% if not user.is_authenticated %}
+                        <div class="d-flex flex-wrap gap-3 mt-4">
+                            <a href="{% url 'register' %}" class="btn btn-lg px-4 py-3" 
+                               style="background-color: #E00078; color: white; border-radius: 10px; font-weight: 600;">
+                                <i class="fas fa-rocket me-2"></i>Начать бесплатно
+                            </a>
+                            <a href="{% url 'login' %}" class="btn btn-lg px-4 py-3" 
+                               style="background-color: transparent; border: 2px solid rgba(255,255,255,0.1); color: #e6e6e7; border-radius: 10px;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Войти в систему
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="d-flex flex-wrap gap-3 mt-4">
+                            <a href="{% url 'create_gantt' %}" class="btn btn-lg px-4 py-3" 
+                               style="background-color: #E00078; color: white; border-radius: 10px; font-weight: 600;">
+                                <i class="fas fa-plus-circle me-2"></i>Создать диаграмму
+                            </a>
+                            <a href="{% url 'dashboard' %}" class="btn btn-lg px-4 py-3" 
+                               style="background-color: transparent; border: 2px solid rgba(255,255,255,0.1); color: #e6e6e7; border-radius: 10px;">
+                                <i class="fas fa-chart-gantt me-2"></i>Мои диаграммы
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-lg-6 text-center mt-4 mt-lg-0">
+                        <img src="{% static 'images/gantt-preview.png' %}" alt="Диаграмма Ганта" 
+                             class="img-fluid rounded-3 shadow-lg" style="border: 1px solid rgba(255,255,255,0.03);">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Как это работает -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="mb-4" style="color: #e6e6e7; font-weight: 600;">
+                    <i class="fas fa-cogs me-2" style="color: #E00078;"></i>Как это работает
+                </h2>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0" style="background-color: #151617; border: 1px solid rgba(255,255,255,0.03);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px; background-color: rgba(224,0,120,0.1);">
+                                <span class="text-white" style="font-size: 24px; color: #E00078 !important;">1</span>
+                            </div>
+                            <h5 class="card-title mb-0" style="color: #e6e6e7;">Выберите тип ПИ</h5>
+                        </div>
+                        <p class="card-text" style="color: #9aa0a6;">
+                            Укажите вид полезного ископаемого: уголь, руда или ОПИ. 
+                            Для каждого типа доступны свои стадии и работы.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0" style="background-color: #151617; border: 1px solid rgba(255,255,255,0.03);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px; background-color: rgba(224,0,120,0.1);">
+                                <span class="text-white" style="font-size: 24px; color: #E00078 !important;">2</span>
+                            </div>
+                            <h5 class="card-title mb-0" style="color: #e6e6e7;">Укажите стадию</h5>
+                        </div>
+                        <p class="card-text" style="color: #9aa0a6;">
+                            Выберите текущую стадию вашего проекта: от идеи до строительства. 
+                            Система покажет только релевантные работы.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0" style="background-color: #151617; border: 1px solid rgba(255,255,255,0.03);">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px; background-color: rgba(224,0,120,0.1);">
+                                <span class="text-white" style="font-size: 24px; color: #E00078 !important;">3</span>
+                            </div>
+                            <h5 class="card-title mb-0" style="color: #e6e6e7;">Определите вопрос</h5>
+                        </div>
+                        <p class="card-text" style="color: #9aa0a6;">
+                            Укажите, какой вопрос нужно решить. Система сфокусирует дорожную карту 
+                            только на необходимых работах.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Популярные FAQ -->
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4" style="color: #e6e6e7; font-weight: 600;">
+                    <i class="fas fa-question-circle me-2" style="color: #E00078;"></i>Частые вопросы
+                </h2>
+                
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item mb-2 border-0" style="background-color: #151617;">
+                        <h3 class="accordion-header" id="heading{{ forloop.counter }}">
+                            <button class="accordion-button collapsed py-3" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}"
+                                    style="background-color: #151617; color: #e6e6e7; border: 1px solid rgba(255,255,255,0.03);">
+                                <i class="fas fa-book me-2" style="color: #E00078;"></i>
+                                {{ faq.question }}
+                            </button>
+                        </h3>
+                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body" style="color: #9aa0a6; border: 1px solid rgba(255,255,255,0.03); border-top: none;">
+                                {{ faq.answer|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'faq_search' %}" class="btn px-4 py-2" 
+                       style="background-color: transparent; border: 1px solid rgba(255,255,255,0.1); color: #e6e6e7;">
+                        <i class="fas fa-search me-2"></i>Смотреть все вопросы
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

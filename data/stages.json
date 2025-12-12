@@ -1,0 +1,212 @@
+[
+    {
+        "pk": 1,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 1,
+            "name": "1. Предварительное изучение",
+            "code": "COAL_PRELIMINARY",
+            "order": 1,
+            "description": "Предварительная оценка угленосности территории",
+            "duration_months": 4,
+            "start_month": 0,
+            "color": "#4A90E2",
+            "depends_on": []
+        }
+    },
+    {
+        "pk": 2,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 1,
+            "name": "2. Поисковые работы",
+            "code": "COAL_SEARCH",
+            "order": 2,
+            "description": "Поисково-оценочные работы на перспективных участках",
+            "duration_months": 6,
+            "start_month": 4,
+            "color": "#50E3C2",
+            "depends_on": [1]
+        }
+    },
+    {
+        "pk": 3,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 1,
+            "name": "3. Разведочные работы",
+            "code": "COAL_EXPLORATION",
+            "order": 3,
+            "description": "Детальная разведка месторождения",
+            "duration_months": 12,
+            "start_month": 10,
+            "color": "#F5A623",
+            "depends_on": [2]
+        }
+    },
+    {
+        "pk": 4,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 1,
+            "name": "4. Оценка запасов",
+            "code": "COAL_RESERVES",
+            "order": 4,
+            "description": "Подсчет и утверждение запасов угля",
+            "duration_months": 3,
+            "start_month": 22,
+            "color": "#7ED321",
+            "depends_on": [3]
+        }
+    },
+    {
+        "pk": 5,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 1,
+            "name": "5. Лицензирование",
+            "code": "COAL_LICENSING",
+            "order": 5,
+            "description": "Получение лицензии на пользование недрами",
+            "duration_months": 6,
+            "start_month": 25,
+            "color": "#BD10E0",
+            "depends_on": [4]
+        }
+    },
+    {
+        "pk": 6,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 1,
+            "name": "6. Проектирование",
+            "code": "COAL_DESIGN",
+            "order": 6,
+            "description": "Разработка проектной документации",
+            "duration_months": 9,
+            "start_month": 31,
+            "color": "#9013FE",
+            "depends_on": [5]
+        }
+    },
+    {
+        "pk": 7,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 1,
+            "name": "7. Строительство",
+            "code": "COAL_CONSTRUCTION",
+            "order": 7,
+            "description": "Строительство горного предприятия",
+            "duration_months": 24,
+            "start_month": 40,
+            "color": "#417505",
+            "depends_on": [6]
+        }
+    },
+     {
+        "pk": 8,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 2,
+            "name": "1. Геологическое картирование",
+            "code": "IRON_GEOLOGY",
+            "order": 1,
+            "description": "Детальное геологическое картирование",
+            "duration_months": 3,
+            "start_month": 0,
+            "color": "#FF6B6B",
+            "depends_on": []
+        }
+    },
+    {
+        "pk": 9,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 2,
+            "name": "2. Магнитометрическая съемка",
+            "code": "IRON_MAGNETIC",
+            "order": 2,
+            "description": "Магнитометрические исследования",
+            "duration_months": 2,
+            "start_month": 3,
+            "color": "#4ECDC4",
+            "depends_on": [10]
+        }
+    },
+    {
+        "pk": 10,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 2,
+            "name": "3. Разведочное бурение",
+            "code": "IRON_DRILLING",
+            "order": 3,
+            "description": "Разведочное бурение на железную руду",
+            "duration_months": 10,
+            "start_month": 5,
+            "color": "#FFE66D",
+            "depends_on": [11]
+        }
+    },
+    {
+        "pk": 11,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 2,
+            "name": "4. Технологические испытания",
+            "code": "IRON_TECH_TESTS",
+            "order": 4,
+            "description": "Технологические испытания обогатимости",
+            "duration_months": 4,
+            "start_month": 15,
+            "color": "#1A535C",
+            "depends_on": [12]
+        }
+    },
+    {
+        "pk": 12,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 3,
+            "name": "1. Шлиховое опробование",
+            "code": "GOLD_SCHLICH",
+            "order": 1,
+            "description": "Шлиховое опробование на золото",
+            "duration_months": 4,
+            "start_month": 0,
+            "color": "#FFD700",
+            "depends_on": []
+        }
+    },
+    {
+        "pk": 13,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 3,
+            "name": "2. Геохимические исследования",
+            "code": "GOLD_GEOCHEM",
+            "order": 2,
+            "description": "Геохимические поиски золота",
+            "duration_months": 3,
+            "start_month": 4,
+            "color": "#DAA520",
+            "depends_on": [14]
+        }
+    },
+    {
+        "pk": 14,
+        "model": "roadmap_app.stage",
+        "fields": {
+            "mineral_type": 3,
+            "name": "3. Оценочное бурение",
+            "code": "GOLD_EVALUATION",
+            "order": 3,
+            "description": "Оценочное бурение на золото",
+            "duration_months": 8,
+            "start_month": 7,
+            "color": "#B8860B",
+            "depends_on": [15]
+        }
+    }
+]
