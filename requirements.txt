@@ -1,9 +1,5 @@
-Django
+Django>=4.2
 django-crispy-forms
 Pillow
-django-extensions
 python-dotenv
-gunicorn
 whitenoise
-pandas
-openpyxl

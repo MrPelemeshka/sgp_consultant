@@ -6,10 +6,19 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-^!6j%g)r#s^&8k5$bwq@7m+p3z9x4c2v1n0l8h5d3f7g2j4k6'
+# Секретный ключ из .env или старый для совместимости
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-^!6j%g)r#s^&8k5$bwq@7m+p3z9x4c2v1n0l8h5d3f7g2j4k6')
 
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# DEBUG из .env файла
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# ALLOWED_HOSTS из .env
+ALLOWED_HOSTS_STR = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STR.split(',')]
+
+# Добавьте ваш домен PythonAnywhere
+if 'klimovproduser.pythonanywhere.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('klimovproduser.pythonanywhere.com')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,6 +34,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ДОБАВЬТЕ ЭТУ СТРОЧКУ
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -80,9 +90,13 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+# Статические файлы
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise для статических файлов
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -96,3 +110,29 @@ LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'login'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# Настройки безопасности для продакшена
+if not DEBUG:
+    # HTTPS настройки
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 год
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+    # Безопасные куки
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # Другие настройки безопасности
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
+    # Для PythonAnywhere HTTPS прокси
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Доверенные источники CSRF
+    CSRF_TRUSTED_ORIGINS = [
+        f'https://{host}' for host in ALLOWED_HOSTS
+        if not host.startswith('localhost') and not host.startswith('127.0.0.1')
+    ]
