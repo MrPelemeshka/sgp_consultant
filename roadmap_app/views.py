@@ -297,13 +297,9 @@ def view_gantt(request, chart_id):
     """
     chart = get_object_or_404(UserGanttChart, id=chart_id, user=request.user)
     
-    # Отладка - посмотрим, что хранится в chart_data
-    print("Chart data:", chart.chart_data)
-    
     try:
         # Проверяем структуру данных
         if not chart.chart_data or 'stages' not in chart.chart_data:
-            print("Некорректные данные диаграммы")
             # Создаем минимальные данные
             chart_data = {
                 'mineral_type': {'name': chart.mineral_type.name if chart.mineral_type else 'Не указан'},
@@ -318,7 +314,6 @@ def view_gantt(request, chart_id):
         chart_data_json = json.dumps(chart_data, ensure_ascii=False, default=str)
         
     except Exception as e:
-        print(f"Ошибка при обработке данных: {e}")
         # Создаем минимальные данные при ошибке
         chart_data_json = json.dumps({
             'mineral_type': {'name': 'Ошибка данных'},
