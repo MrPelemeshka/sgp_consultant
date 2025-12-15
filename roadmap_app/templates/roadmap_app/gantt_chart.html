@@ -569,9 +569,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://d3js.org/d3.v7.min.js" defer></script>
 
 <script>
 // Основные данные
@@ -601,7 +601,15 @@ const stageColors = [
     '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#EC4899'
 ];
 
-$(document).ready(function() {
+// Функция инициализации после загрузки всех скриптов
+function initializeGantt() {
+    if (typeof d3 === 'undefined') {
+        console.error('D3.js не загружен. Повторная попытка...');
+        setTimeout(initializeGantt, 100);
+        return;
+    }
+    
+    console.log('D3.js загружен:', typeof d3);
     console.log('Данные диаграммы:', chartData);
     
     // Инициализация дорожной карты
@@ -612,7 +620,14 @@ $(document).ready(function() {
     
     // Обработчики событий
     setupEventHandlers();
-});
+}
+
+// Запускаем инициализацию при полной загрузке страницы
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeGantt);
+} else {
+    initializeGantt();
+}
 
 function initRoadmap() {
     const roadmapContainer = $('#roadmapStages');
