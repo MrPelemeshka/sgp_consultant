@@ -436,12 +436,6 @@
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center flex-wrap gap-3">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="showDependencies" checked>
-                        <label class="form-check-label small" for="showDependencies" style="color: var(--muted);">
-                            Показывать связи
-                        </label>
-                    </div>
-                    <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="showWorks" checked>
                         <label class="form-check-label small" for="showWorks" style="color: var(--muted);">
                             Показывать работы
@@ -591,7 +585,6 @@ try {
 
 // Переменные для управления
 let currentStageIndex = 0;
-let showDependencies = true;
 let showWorks = true;
 let highlightCurrent = true;
 
@@ -1185,13 +1178,6 @@ function setupEventHandlers() {
         const format = $('input[name="exportFormat"]:checked').attr('id');
         alert(`Экспорт в ${format.replace('format', '').toUpperCase()} начат. Эта функция находится в разработке.`);
         $('#exportModal').modal('hide');
-    });
-    
-    // Чекбоксы управления диаграммой
-    $('#showDependencies').change(function() {
-        showDependencies = this.checked;
-        // Логика для отображения связей
-        console.log('Показ связей:', this.checked);
     });
     
     $('#showWorks').change(function() {
