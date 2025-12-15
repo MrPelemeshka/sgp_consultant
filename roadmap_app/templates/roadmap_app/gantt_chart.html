@@ -5,6 +5,26 @@
 
 {% block extra_css %}
 <style>
+    .dependency-line {
+        stroke: #E00078;
+        stroke-width: 2;
+        stroke-dasharray: 5, 3;
+        fill: none;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .dependency-line:hover {
+        stroke-width: 3;
+        opacity: 1;
+    }
+
+    .dependency-arrow {
+        fill: #E00078;
+        stroke: #E00078;
+        stroke-width: 1;
+    }
+
     :root {
         --fuchsia: #E00078;
         --accent-weak: rgba(224,0,120,0.08);
@@ -489,6 +509,16 @@
                         <span class="small" style="color: var(--muted);">Завершенные работы</span>
                     </div>
                 </div>
+                <div class="col-md-4 mb-2">
+                    <div class="d-flex align-items-center">
+                        <svg width="24" height="24" style="margin-right: 10px;">
+                            <line x1="2" y1="12" x2="22" y2="12" 
+                                stroke="#E00078" stroke-width="2" stroke-dasharray="5,3"/>
+                            <polygon points="22,12 17,9 17,15" fill="#E00078"/>
+                        </svg>
+                        <span class="small" style="color: var(--muted);">Зависимости работ</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -608,9 +638,6 @@ function initializeGantt() {
         setTimeout(initializeGantt, 100);
         return;
     }
-    
-    console.log('D3.js загружен:', typeof d3);
-    console.log('Данные диаграммы:', chartData);
     
     // Инициализация дорожной карты
     initRoadmap();
@@ -919,6 +946,9 @@ function initGanttChart() {
             currentY += stage.works.length * rowHeight + 10;
         }
     });
+
+    // Рисуем связи ДО рисования оси времени (чтобы связи были под осями)
+    drawDependencies(svg, x, allWorks, rowHeight, stageHeaderHeight);
     
     // Рисуем ось времени
     drawTimeAxis(svg, x, height, maxMonths);
@@ -937,6 +967,74 @@ function initGanttChart() {
     const feMerge = filter.append('feMerge');
     feMerge.append('feMergeNode').attr('in', 'coloredBlur');
     feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+}
+
+function drawDependencies(svg, x, allWorks, rowHeight, stageHeaderHeight) {
+    if (!showDependencies) return;
+    
+    const worksMap = new Map();
+    allWorks.forEach(work => {
+        worksMap.set(work.id, work);
+    });
+    
+    // Собираем все связи
+    const connections = [];
+    
+    allWorks.forEach(sourceWork => {
+        if (sourceWork.dependencies && sourceWork.dependencies.length > 0) {
+            sourceWork.dependencies.forEach(depId => {
+                const targetWork = worksMap.get(depId);
+                if (targetWork) {
+                    connections.push({
+                        source: targetWork, // Работа, от которой идет зависимость
+                        target: sourceWork  // Работа, которая зависит
+                    });
+                }
+            });
+        }
+    });
+    
+    // Рисуем линии связей
+    connections.forEach(conn => {
+        // Координаты начала и конца
+        const startX = x(conn.source.start_global + conn.source.duration);
+        const startY = conn.source.stageIndex * stageHeaderHeight + 
+                      (conn.source.worksIndex || 0) * rowHeight + rowHeight / 2;
+        
+        const endX = x(conn.target.start_global);
+        const endY = conn.target.stageIndex * stageHeaderHeight + 
+                    (conn.target.worksIndex || 0) * rowHeight + rowHeight / 2;
+        
+        // Создаем путь
+        const path = svg.append('path')
+            .attr('class', 'dependency-line')
+            .attr('marker-end', 'url(#arrowhead)');
+        
+        // Простая линия
+        const d = `M ${startX} ${startY} L ${endX} ${endY}`;
+        path.attr('d', d);
+        
+        // Альтернативный вариант с кривыми Безье для лучшего вида
+        const midX = (startX + endX) / 2;
+        const dCurve = `M ${startX} ${startY} 
+                       C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+        path.attr('d', dCurve);
+    });
+    
+    // Добавляем определение стрелки
+    const defs = svg.append('defs');
+    const marker = defs.append('marker')
+        .attr('id', 'arrowhead')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 8)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto');
+    
+    marker.append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('class', 'dependency-arrow');
 }
 
 function drawGrid(svg, x, height, maxMonths) {
@@ -1212,6 +1310,42 @@ function setupEventHandlers() {
             initGanttChart();
         }
     });
+
+    $('#showDependencies').change(function() {
+        showDependencies = this.checked;
+        initGanttChart();  // Перерисовываем всю диаграмму
+        console.log('Показ связей:', this.checked);
+    });
+}
+
+function getAllWorksWithIndex() {
+    const allWorks = [];
+    const stages = chartData.stages || [];
+    let worksIndex = 0;
+    
+    stages.forEach((stage, stageIndex) => {
+        if (stage.works && stage.works.length > 0) {
+            stage.works.forEach((work, workIndex) => {
+                const workWithIndex = {
+                    ...work,
+                    id: work.id,
+                    stageIndex: stageIndex,
+                    stageId: stage.id,
+                    stageName: stage.name,
+                    stageColor: stageColors[stageIndex % stageColors.length],
+                    worksIndex: worksIndex,
+                    workIndex: workIndex,
+                    start_global: work.start_global || 0,
+                    duration: work.duration || 1,
+                    dependencies: work.dependencies || []  // Добавляем зависимости
+                };
+                allWorks.push(workWithIndex);
+                worksIndex++;
+            });
+        }
+    });
+    
+    return allWorks;
 }
 
 // Функция для пересчета размеров при изменении окна
